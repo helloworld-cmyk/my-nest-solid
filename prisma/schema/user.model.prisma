@@ -1,0 +1,29 @@
+enum AuthProvider {
+  EMAIL_PASSWORD
+  GOOGLE
+  APPLE
+  FACEBOOK
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phoneNumber  String
+  avatarPath   String?
+  firebaseUid  String?
+  authProvider AuthProvider
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  // sessions      UserDeviceSession[] // bật lại khi làm multi-device (OAuth/FCM — làm sau)
+
+  reviews      ProductReview[] 
+  addresses    UserAddress[]  
+  paymentCards PaymentCard[]   
+  carts        Cart[]         
+  wishlist     WishlistItem[]  
+  orders       Order[]        
+  coupons      CouponRedemption[] 
+}

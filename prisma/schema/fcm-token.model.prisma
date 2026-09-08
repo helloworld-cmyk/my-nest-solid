@@ -1,0 +1,23 @@
+// ============================================================
+// DeviceFcmToken — TẠM THỜI COMMENT, chưa sử dụng.
+// Hiện tại chỉ hỗ trợ đăng nhập bằng email + password.
+// Bật lại khi làm tính năng thông báo FCM. (làm sau)
+// ============================================================
+
+// enum FcmTokenStatus {
+//   ACTIVE
+//   INVALIDATED
+// }
+//
+// model DeviceFcmToken {
+//   id            String         @id @default(uuid())
+//   deviceId      String
+//   device        Device         @relation(fields: [deviceId], references: [id])
+//   fcmToken      String
+//   status        FcmTokenStatus @default(ACTIVE)
+//   firstSeenAt   DateTime
+//   lastSeenAt    DateTime
+//   invalidatedAt DateTime?
+//   createdAt     DateTime       @default(now())
+//   updatedAt     DateTime       @updatedAt
+// }

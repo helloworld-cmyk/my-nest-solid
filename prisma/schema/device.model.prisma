@@ -1,0 +1,32 @@
+// ============================================================
+// Device — TẠM THỜI COMMENT, chưa sử dụng.
+// Hiện tại chỉ hỗ trợ đăng nhập bằng email + password.
+// Bật lại khi làm multi-device + refresh token + FCM.
+// ============================================================
+
+// enum Platform {
+//   IOS
+//   ANDROID
+//   WEB
+// }
+//
+// enum Locale {
+//   VI
+//   EN
+// }
+//
+// model Device {
+//   id          String    @id @default(uuid())
+//   deviceId    String    @unique
+//   platform    Platform
+//   appVersion  Int
+//   locale      Locale
+//   timezone    Int // GMT offset, -12 đến +12
+//   lastSeenAt  DateTime
+//   createdAt   DateTime  @default(now())
+//   updatedAt   DateTime  @updatedAt
+//   fcmTokens   DeviceFcmToken[]
+//   sessions    UserDeviceSession[]
+//
+//   @@check("timezone_range", "timezone" >= -12 AND "timezone" <= 12)
+// }

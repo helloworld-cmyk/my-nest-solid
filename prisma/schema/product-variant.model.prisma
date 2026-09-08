@@ -1,0 +1,19 @@
+model ProductVariant {
+  id           Int      @id @default(autoincrement())
+
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  colorHexCode Int?    
+  size         String?  
+  price        Decimal? @db.Decimal(12, 2) 
+  stock        Int      @default(0) 
+  isActive     Boolean  @default(true) 
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cartItems CartItem[]
+  orderItems OrderItem[]
+
+  @@unique([productId, colorHexCode, size])
+}

@@ -1,0 +1,17 @@
+
+// 15. Thiết kế tổng thể nên hướng tới:
+//     User
+//       └── UserDeviceSession
+//             └── Device
+//                   └── DeviceFcmToken
+//     để hỗ trợ multi-device, refresh token, FCM và revoke session.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}

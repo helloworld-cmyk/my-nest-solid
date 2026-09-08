@@ -1,0 +1,25 @@
+// ============================================================
+// UserDeviceSession — TẠM THỜI COMMENT, chưa sử dụng.
+// Hiện tại chỉ hỗ trợ đăng nhập bằng email + password.
+// Bật lại khi làm multi-device + refresh token + FCM.
+// ============================================================
+
+// enum SessionEndedReason {
+//   LOGOUT
+//   EXPIRED
+//   REVOKED
+//   DEVICE_REMOVED
+// }
+//
+// model UserDeviceSession {
+//   id          String             @id @default(uuid())
+//   userId      String
+//   user        User               @relation(fields: [userId], references: [id])
+//   deviceId    String
+//   device      Device             @relation(fields: [deviceId], references: [id])
+//   linkedAt    DateTime
+//   endedAt     DateTime?
+//   endedReason SessionEndedReason?
+//   createdAt   DateTime           @default(now())
+//   updatedAt   DateTime           @updatedAt
+// }

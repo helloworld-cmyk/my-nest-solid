@@ -1,0 +1,27 @@
+enum CardBrand {
+  VISA
+  MASTERCARD
+  JCB
+  AMEX
+  UNKNOWN
+}
+
+model PaymentCard {
+  id         String    @id @default(uuid())
+
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cardToken  String    @unique 
+  brand      CardBrand @default(UNKNOWN)
+  cardHolder String
+  last4      String 
+  expiryMonth Int
+  expiryYear  Int
+  isDefault  Boolean   @default(false) 
+  isActive   Boolean   @default(true) 
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId, isActive])
+}

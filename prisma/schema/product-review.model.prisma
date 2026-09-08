@@ -1,0 +1,18 @@
+model ProductReview {
+  id         Int      @id @default(autoincrement())
+
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+
+  userName   String   
+  avatarPath String?  
+  rating     Decimal  @db.Decimal(2, 1) // 0.0 – 5.0
+  comment    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@unique([productId, userId]) 
+  @@index([productId, createdAt])
+}
