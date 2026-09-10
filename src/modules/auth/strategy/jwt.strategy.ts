@@ -2,13 +2,23 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Role } from '../../../../prisma/generated/prisma/enums.js';
 import { UserRepository } from '../../../repositories/user.repository.js';
 
 export interface JwtPayload {
   sub: string;
   email: string;
+  role?: Role;
   iat?: number;
   exp?: number;
+}
+
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
 }
 
 @Injectable()
@@ -24,7 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     if (!payload.sub) {
       throw new UnauthorizedException('Invalid token payload');
     }
@@ -39,6 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      role: user.role ?? Role.USER,
     };
   }
 }

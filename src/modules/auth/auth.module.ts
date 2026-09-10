@@ -4,9 +4,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { PrismaService } from '../../prisma/prisma.service.js';
 import { UserRepository } from '../../repositories/user.repository.js';
 import { JwtStrategy } from './strategy/jwt.strategy.js';
+import { JwtAdminStrategy } from './strategy/jwt-admin.strategy.js';
+import { JwtTokenStrategy } from './strategy/jwt-token.strategy.js';
 
 @Module({
   imports: [
@@ -23,7 +24,13 @@ import { JwtStrategy } from './strategy/jwt.strategy.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [PrismaService, UserRepository, AuthService, JwtStrategy],
-  exports: [JwtStrategy],
+  providers: [
+    UserRepository,
+    AuthService,
+    JwtStrategy,
+    JwtAdminStrategy,
+    JwtTokenStrategy,
+  ],
+  exports: [JwtStrategy, JwtAdminStrategy, JwtTokenStrategy],
 })
 export class AuthModule {}

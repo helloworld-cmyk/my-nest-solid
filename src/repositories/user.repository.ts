@@ -18,6 +18,25 @@ export class UserRepository {
     });
   }
 
+  findProfileById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        avatarPath: true,
+        firebaseUid: true,
+        authProvider: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      } satisfies Prisma.UserSelect,
+    });
+  }
+
   emailExists(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
@@ -26,6 +45,16 @@ export class UserRepository {
   }
 
   create(data: Prisma.UserCreateInput) {
-    return this.prisma.user.create({ data });
+    return this.prisma.user.create({
+      data,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        role: true,
+      } satisfies Prisma.UserSelect,
+    });
   }
 }

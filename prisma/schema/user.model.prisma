@@ -5,6 +5,11 @@ enum AuthProvider {
   FACEBOOK
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -15,6 +20,7 @@ model User {
   avatarPath   String?
   firebaseUid  String?
   authProvider AuthProvider
+  role         Role         @default(USER)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   // sessions      UserDeviceSession[] // bật lại khi làm multi-device (OAuth/FCM — làm sau)

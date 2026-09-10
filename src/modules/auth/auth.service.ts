@@ -6,8 +6,11 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { hash, verify } from 'argon2';
 import { UserRepository } from '../../repositories/user.repository.js';
+import { AuthResponseMapper } from '../../utils/converDtoResponse/auth.js';
+import { AuthProvider, Role } from '../../../prisma/generated/prisma/enums.js';
 import { LoginDto } from './dto/request/login.js';
 import { RegisterDto } from './dto/request/register.js';
+import { RegisterResponseDto } from './dto/response/register.js';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto } from './dto/request/refresh.js';
 
@@ -28,10 +31,10 @@ export class AuthService {
     if (!passwordMatches) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return this.generateTokens(user.id, user.email);
+    return this.generateTokens(user.id, user.email, user.role ?? Role.USER);
   }
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto): Promise<RegisterResponseDto> {
     const existing = await this.userRepository.emailExists(registerDto.email);
     if (existing) {
       throw new ConflictException('Email is already registered');
@@ -43,15 +46,9 @@ export class AuthService {
       firstName: registerDto.firstName,
       lastName: registerDto.lastName,
       phoneNumber: registerDto.phone,
-      authProvider: 'EMAIL_PASSWORD',
+      authProvider: AuthProvider.EMAIL_PASSWORD,
     });
-    return {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phoneNumber: user.phoneNumber,
-    };
+    return AuthResponseMapper.toRegisterResponse(user);
   }
 
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
@@ -68,11 +65,11 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-    return this.generateTokens(user.id, user.email);
+    return this.generateTokens(user.id, user.email, user.role ?? Role.USER);
   }
 
-  private generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
+  private generateTokens(userId: string, email: string, role: Role) {
+    const payload = { sub: userId, email, role };
 
     const accessExpiresIn =
       this.configService.get<string>('JWT_ACCESS_EXP') ?? '5m';

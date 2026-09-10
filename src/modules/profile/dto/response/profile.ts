@@ -1,5 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  AuthProvider,
+  Role,
+} from '../../../../../prisma/generated/prisma/enums.js';
+import {
   IsDate,
   IsEmail,
   IsEnum,
@@ -45,10 +49,14 @@ export class ProfileResponseDto {
 
   @ApiProperty({
     example: 'EMAIL_PASSWORD',
-    enum: ['EMAIL_PASSWORD', 'GOOGLE', 'APPLE', 'FACEBOOK'],
+    enum: AuthProvider,
   })
-  @IsEnum(['EMAIL_PASSWORD', 'GOOGLE', 'APPLE', 'FACEBOOK'] as const)
-  authProvider!: string;
+  @IsEnum(AuthProvider)
+  authProvider!: AuthProvider;
+
+  @ApiProperty({ example: 'USER', enum: Role })
+  @IsEnum(Role)
+  role!: Role;
 
   @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
   @IsDate()

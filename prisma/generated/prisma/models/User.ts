@@ -34,6 +34,7 @@ export type UserMinAggregateOutputType = {
   avatarPath: string | null
   firebaseUid: string | null
   authProvider: $Enums.AuthProvider | null
+  role: $Enums.Role | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +49,7 @@ export type UserMaxAggregateOutputType = {
   avatarPath: string | null
   firebaseUid: string | null
   authProvider: $Enums.AuthProvider | null
+  role: $Enums.Role | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,6 +64,7 @@ export type UserCountAggregateOutputType = {
   avatarPath: number
   firebaseUid: number
   authProvider: number
+  role: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -78,6 +81,7 @@ export type UserMinAggregateInputType = {
   avatarPath?: true
   firebaseUid?: true
   authProvider?: true
+  role?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -92,6 +96,7 @@ export type UserMaxAggregateInputType = {
   avatarPath?: true
   firebaseUid?: true
   authProvider?: true
+  role?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +111,7 @@ export type UserCountAggregateInputType = {
   avatarPath?: true
   firebaseUid?: true
   authProvider?: true
+  role?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -193,6 +199,7 @@ export type UserGroupByOutputType = {
   avatarPath: string | null
   firebaseUid: string | null
   authProvider: $Enums.AuthProvider
+  role: $Enums.Role
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -228,6 +235,7 @@ export type UserWhereInput = {
   avatarPath?: Prisma.StringNullableFilter<"User"> | string | null
   firebaseUid?: Prisma.StringNullableFilter<"User"> | string | null
   authProvider?: Prisma.EnumAuthProviderFilter<"User"> | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   reviews?: Prisma.ProductReviewListRelationFilter
@@ -249,6 +257,7 @@ export type UserOrderByWithRelationInput = {
   avatarPath?: Prisma.SortOrderInput | Prisma.SortOrder
   firebaseUid?: Prisma.SortOrderInput | Prisma.SortOrder
   authProvider?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   reviews?: Prisma.ProductReviewOrderByRelationAggregateInput
@@ -273,6 +282,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   avatarPath?: Prisma.StringNullableFilter<"User"> | string | null
   firebaseUid?: Prisma.StringNullableFilter<"User"> | string | null
   authProvider?: Prisma.EnumAuthProviderFilter<"User"> | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   reviews?: Prisma.ProductReviewListRelationFilter
@@ -294,6 +304,7 @@ export type UserOrderByWithAggregationInput = {
   avatarPath?: Prisma.SortOrderInput | Prisma.SortOrder
   firebaseUid?: Prisma.SortOrderInput | Prisma.SortOrder
   authProvider?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -314,6 +325,7 @@ export type UserScalarWhereWithAggregatesInput = {
   avatarPath?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   firebaseUid?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   authProvider?: Prisma.EnumAuthProviderWithAggregatesFilter<"User"> | $Enums.AuthProvider
+  role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -328,6 +340,7 @@ export type UserCreateInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
@@ -349,6 +362,7 @@ export type UserUncheckedCreateInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
@@ -370,6 +384,7 @@ export type UserUpdateInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
@@ -391,6 +406,7 @@ export type UserUncheckedUpdateInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -412,6 +428,7 @@ export type UserCreateManyInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -426,6 +443,7 @@ export type UserUpdateManyMutationInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -440,6 +458,7 @@ export type UserUncheckedUpdateManyInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -464,6 +483,7 @@ export type UserCountOrderByAggregateInput = {
   avatarPath?: Prisma.SortOrder
   firebaseUid?: Prisma.SortOrder
   authProvider?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -478,6 +498,7 @@ export type UserMaxOrderByAggregateInput = {
   avatarPath?: Prisma.SortOrder
   firebaseUid?: Prisma.SortOrder
   authProvider?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -492,6 +513,7 @@ export type UserMinOrderByAggregateInput = {
   avatarPath?: Prisma.SortOrder
   firebaseUid?: Prisma.SortOrder
   authProvider?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -586,6 +608,10 @@ export type EnumAuthProviderFieldUpdateOperationsInput = {
   set?: $Enums.AuthProvider
 }
 
+export type EnumRoleFieldUpdateOperationsInput = {
+  set?: $Enums.Role
+}
+
 export type UserCreateNestedOneWithoutWishlistInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutWishlistInput, Prisma.UserUncheckedCreateWithoutWishlistInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutWishlistInput
@@ -610,6 +636,7 @@ export type UserCreateWithoutCartsInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
@@ -630,6 +657,7 @@ export type UserUncheckedCreateWithoutCartsInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
@@ -666,6 +694,7 @@ export type UserUpdateWithoutCartsInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
@@ -686,6 +715,7 @@ export type UserUncheckedUpdateWithoutCartsInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -706,6 +736,7 @@ export type UserCreateWithoutCouponsInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
@@ -726,6 +757,7 @@ export type UserUncheckedCreateWithoutCouponsInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
@@ -762,6 +794,7 @@ export type UserUpdateWithoutCouponsInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
@@ -782,6 +815,7 @@ export type UserUncheckedUpdateWithoutCouponsInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -802,6 +836,7 @@ export type UserCreateWithoutOrdersInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
@@ -822,6 +857,7 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
@@ -858,6 +894,7 @@ export type UserUpdateWithoutOrdersInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
@@ -878,6 +915,7 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -898,6 +936,7 @@ export type UserCreateWithoutPaymentCardsInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
@@ -918,6 +957,7 @@ export type UserUncheckedCreateWithoutPaymentCardsInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
@@ -954,6 +994,7 @@ export type UserUpdateWithoutPaymentCardsInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
@@ -974,6 +1015,7 @@ export type UserUncheckedUpdateWithoutPaymentCardsInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -994,6 +1036,7 @@ export type UserCreateWithoutReviewsInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.UserAddressCreateNestedManyWithoutUserInput
@@ -1014,6 +1057,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.UserAddressUncheckedCreateNestedManyWithoutUserInput
@@ -1050,6 +1094,7 @@ export type UserUpdateWithoutReviewsInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.UserAddressUpdateManyWithoutUserNestedInput
@@ -1070,6 +1115,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.UserAddressUncheckedUpdateManyWithoutUserNestedInput
@@ -1090,6 +1136,7 @@ export type UserCreateWithoutAddressesInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
@@ -1110,6 +1157,7 @@ export type UserUncheckedCreateWithoutAddressesInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
@@ -1146,6 +1194,7 @@ export type UserUpdateWithoutAddressesInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
@@ -1166,6 +1215,7 @@ export type UserUncheckedUpdateWithoutAddressesInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -1186,6 +1236,7 @@ export type UserCreateWithoutWishlistInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
@@ -1206,6 +1257,7 @@ export type UserUncheckedCreateWithoutWishlistInput = {
   avatarPath?: string | null
   firebaseUid?: string | null
   authProvider: $Enums.AuthProvider
+  role?: $Enums.Role
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
@@ -1242,6 +1294,7 @@ export type UserUpdateWithoutWishlistInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
@@ -1262,6 +1315,7 @@ export type UserUncheckedUpdateWithoutWishlistInput = {
   avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authProvider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -1367,6 +1421,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   avatarPath?: boolean
   firebaseUid?: boolean
   authProvider?: boolean
+  role?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
@@ -1389,6 +1444,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   avatarPath?: boolean
   firebaseUid?: boolean
   authProvider?: boolean
+  role?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1403,6 +1459,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   avatarPath?: boolean
   firebaseUid?: boolean
   authProvider?: boolean
+  role?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1417,11 +1474,12 @@ export type UserSelectScalar = {
   avatarPath?: boolean
   firebaseUid?: boolean
   authProvider?: boolean
+  role?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "firstName" | "lastName" | "phoneNumber" | "avatarPath" | "firebaseUid" | "authProvider" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "firstName" | "lastName" | "phoneNumber" | "avatarPath" | "firebaseUid" | "authProvider" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
   addresses?: boolean | Prisma.User$addressesArgs<ExtArgs>
@@ -1456,6 +1514,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     avatarPath: string | null
     firebaseUid: string | null
     authProvider: $Enums.AuthProvider
+    role: $Enums.Role
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -1897,6 +1956,7 @@ export interface UserFieldRefs {
   readonly avatarPath: Prisma.FieldRef<"User", 'String'>
   readonly firebaseUid: Prisma.FieldRef<"User", 'String'>
   readonly authProvider: Prisma.FieldRef<"User", 'AuthProvider'>
+  readonly role: Prisma.FieldRef<"User", 'Role'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

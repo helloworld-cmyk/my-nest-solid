@@ -303,6 +303,7 @@ export const UserScalarFieldEnum = {
   avatarPath: 'avatarPath',
   firebaseUid: 'firebaseUid',
   authProvider: 'authProvider',
+  role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

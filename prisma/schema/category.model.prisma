@@ -1,6 +1,6 @@
 model Category {
   id        Int        @id @default(autoincrement())
-  name      String
+  name      String     @unique
   slug      String     @unique
   imagePath String?    
   isActive  Boolean    @default(true)

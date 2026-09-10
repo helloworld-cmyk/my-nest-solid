@@ -6,6 +6,7 @@ import { RegisterDto } from './dto/request/register.js';
 import { RefreshTokenDto } from './dto/request/refresh.js';
 import { LoginResponseDto } from './dto/response/login.js';
 import { RefreshTokenResponseDto } from './dto/response/refresh.js';
+import { RegisterResponseDto } from './dto/response/register.js';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -33,6 +34,7 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'User registered successfully',
+    type: RegisterResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
