@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ProductStatus } from '../../prisma/generated/prisma/enums.js';
 import { Prisma } from '../../prisma/generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -14,6 +15,8 @@ export interface ProductListFilter {
   colorHexCodes?: number[];
   sizes?: string[];
   onSaleOnly?: boolean;
+  hotDealsOnly?: boolean;
+  excludeProductId?: number;
   status?: Prisma.ProductWhereInput['status'];
 }
 
@@ -45,13 +48,17 @@ function normalizePagination(page?: number, limit?: number) {
   return { page: safePage, limit: safeLimit, skip: (safePage - 1) * safeLimit };
 }
 
+function clampLimit(limit: number) {
+  return Math.min(Math.max(Math.floor(limit), 1), 20);
+}
+
 @Injectable()
 export class ProductRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  buildWhere(filter: ProductListFilter = {}): Prisma.ProductWhereInput {
+  private buildWhere(filter: ProductListFilter = {}): Prisma.ProductWhereInput {
     const where: Prisma.ProductWhereInput = {
-      status: filter.status ?? 'ACTIVE',
+      status: filter.status ?? ProductStatus.ACTIVE,
     };
 
     if (filter.categoryId !== undefined) {
@@ -70,6 +77,14 @@ export class ProductRepository {
 
     if (filter.onSaleOnly) {
       where.originalPrice = { not: null };
+    }
+
+    if (filter.hotDealsOnly) {
+      where.originalPrice = { gt: this.prisma.product.fields.price };
+    }
+
+    if (filter.excludeProductId !== undefined) {
+      where.id = { not: filter.excludeProductId };
     }
 
     if (filter.search) {
@@ -99,7 +114,7 @@ export class ProductRepository {
     return where;
   }
 
-  resolveOrderBy(
+  private resolveOrderBy(
     sort: ProductListSort = 'newest',
   ): Prisma.ProductOrderByWithRelationInput {
     switch (sort) {
@@ -118,23 +133,43 @@ export class ProductRepository {
     }
   }
 
+  private buildListedArgs(
+    filter: ProductListFilter,
+    sort: ProductListSort,
+    limit?: number,
+    skip?: number,
+  ): Prisma.ProductFindManyArgs & { include: typeof productListInclude } {
+    return {
+      where: this.buildWhere(filter),
+      include: productListInclude,
+      orderBy: this.resolveOrderBy(sort),
+      ...(limit !== undefined ? { take: limit } : {}),
+      ...(skip !== undefined ? { skip } : {}),
+    };
+  }
+
+  private findListed(
+    filter: ProductListFilter,
+    sort: ProductListSort,
+    limit: number,
+  ): Prisma.PrismaPromise<ProductListItem[]> {
+    return this.prisma.product.findMany(
+      this.buildListedArgs(filter, sort, limit),
+    );
+  }
+
   async findPaginated(
     filter: ProductListFilter = {},
     page?: number,
     limit?: number,
     sort: ProductListSort = 'newest',
   ): Promise<{ items: ProductListItem[]; total: number }> {
-    const { limit: take, skip } = normalizePagination(page, limit);
+    const { limit: takeLimit, skip } = normalizePagination(page, limit);
     const where = this.buildWhere(filter);
-    const orderBy = this.resolveOrderBy(sort);
     const [items, total] = await this.prisma.$transaction([
-      this.prisma.product.findMany({
-        where,
-        include: productListInclude,
-        orderBy,
-        skip,
-        take,
-      }),
+      this.prisma.product.findMany(
+        this.buildListedArgs(filter, sort, takeLimit, skip),
+      ),
       this.prisma.product.count({ where }),
     ]);
     return { items, total };
@@ -163,79 +198,39 @@ export class ProductRepository {
     excludeProductId: number,
     limit = 4,
   ): Promise<ProductListItem[]> {
-    return this.prisma.product.findMany({
-      where: {
-        status: 'ACTIVE',
-        categoryId,
-        id: { not: excludeProductId },
-      },
-      include: productListInclude,
-      orderBy: { soldCount: 'desc' },
-      take: Math.min(Math.max(limit, 1), 20),
-    });
+    return this.findListed(
+      { categoryId, excludeProductId },
+      'popular',
+      clampLimit(limit),
+    );
   }
 
-  findHotDeals(limit = 10): Promise<ProductListItem[]> {
-    return this.prisma.product.findMany({
-      where: { status: 'ACTIVE' },
-      include: productListInclude,
-      orderBy: { soldCount: 'desc' },
-      take: limit,
-    });
+  findHotDeals(limit = 10): Prisma.PrismaPromise<ProductListItem[]> {
+    return this.findListed(
+      { hotDealsOnly: true },
+      'popular',
+      clampLimit(limit),
+    );
   }
 
-  findNewArrivals(limit = 10): Promise<ProductListItem[]> {
-    return this.prisma.product.findMany({
-      where: { status: 'ACTIVE' },
-      include: productListInclude,
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
+  findNewArrivals(limit = 10): Prisma.PrismaPromise<ProductListItem[]> {
+    return this.findListed({}, 'newest', clampLimit(limit));
   }
 
-  findOnSale(limit = 10): Promise<ProductListItem[]> {
-    return this.prisma.product.findMany({
-      where: { status: 'ACTIVE', originalPrice: { not: null } },
-      include: productListInclude,
-      orderBy: { soldCount: 'desc' },
-      take: limit,
-    });
+  findOnSale(limit = 10): Prisma.PrismaPromise<ProductListItem[]> {
+    return this.findListed({ onSaleOnly: true }, 'popular', clampLimit(limit));
   }
 
-  /**
-   * GET /products/home — 3 list home products, chạy trong 1 transaction.
-   * hotDeals  = đang giảm giá (originalPrice > price), sort soldCount desc
-   * newArrivals = sản phẩm mới, sort createdAt desc
-   * onSale    = có originalPrice, sort soldCount desc
-   */
   async findHomeProducts(listSize = 10): Promise<{
     hotDeals: ProductListItem[];
     newArrivals: ProductListItem[];
     onSale: ProductListItem[];
   }> {
-    const take = Math.min(Math.max(listSize, 1), 20);
+    const limit = clampLimit(listSize);
     const [hotDeals, newArrivals, onSale] = await this.prisma.$transaction([
-      this.prisma.product.findMany({
-        where: {
-          status: 'ACTIVE',
-          originalPrice: { gt: this.prisma.product.fields.price },
-        },
-        include: productListInclude,
-        orderBy: { soldCount: 'desc' },
-        take,
-      }),
-      this.prisma.product.findMany({
-        where: { status: 'ACTIVE' },
-        include: productListInclude,
-        orderBy: { createdAt: 'desc' },
-        take,
-      }),
-      this.prisma.product.findMany({
-        where: { status: 'ACTIVE', originalPrice: { not: null } },
-        include: productListInclude,
-        orderBy: { soldCount: 'desc' },
-        take,
-      }),
+      this.findHotDeals(limit),
+      this.findNewArrivals(limit),
+      this.findOnSale(limit),
     ]);
     return { hotDeals, newArrivals, onSale };
   }
@@ -244,12 +239,8 @@ export class ProductRepository {
     min: number | null;
     max: number | null;
   }> {
-    const where: Prisma.ProductWhereInput = {
-      status: 'ACTIVE',
-      ...(categoryId !== undefined ? { categoryId } : {}),
-    };
     const agg = await this.prisma.product.aggregate({
-      where,
+      where: this.buildWhere({ categoryId }),
       _min: { price: true },
       _max: { price: true },
     });

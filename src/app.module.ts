@@ -9,6 +9,7 @@ import { PaymentModule } from './modules/payment/payment.module.js';
 import { AddressModule } from './modules/address/address.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProductModule } from './modules/product/product.module.js';
+import { WishlistModule } from './modules/wishlist/wishlist.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -19,6 +20,7 @@ import { ProductModule } from './modules/product/product.module.js';
     PaymentModule,
     AddressModule,
     ProductModule,
+    WishlistModule,
   ],
   controllers: [AppController],
   providers: [AppService],

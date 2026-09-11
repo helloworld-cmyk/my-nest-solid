@@ -1,14 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '../../prisma/generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
-/**
- * Phục vụ `isInWishlist` ở GET /catalog/products và các wishlist endpoints sau này.
- */
+const wishlistItemInclude = {
+  product: {
+    include: {
+      category: true,
+      images: { orderBy: { sortOrder: 'asc' as const } },
+    },
+  },
+} satisfies Prisma.WishlistItemInclude;
+
+export type WishlistItemWithProduct = Prisma.WishlistItemGetPayload<{
+  include: typeof wishlistItemInclude;
+}>;
+
 @Injectable()
 export class WishlistRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Danh sách productId user đã wishlist (tuỳ chọn giới hạn trong 1 tập product) */
   async findProductIdsByUser(
     userId: string,
     productIds?: number[],
@@ -32,18 +42,21 @@ export class WishlistRepository {
     });
   }
 
-  listByUser(userId: string) {
+  findByUserAndProduct(
+    userId: string,
+    productId: number,
+  ): Promise<WishlistItemWithProduct | null> {
+    return this.prisma.wishlistItem.findUnique({
+      where: { userId_productId: { userId, productId } },
+      include: wishlistItemInclude,
+    });
+  }
+
+  listByUser(userId: string): Promise<WishlistItemWithProduct[]> {
     return this.prisma.wishlistItem.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      include: {
-        product: {
-          include: {
-            category: true,
-            images: { orderBy: { sortOrder: 'asc' } },
-          },
-        },
-      },
+      include: wishlistItemInclude,
     });
   }
 

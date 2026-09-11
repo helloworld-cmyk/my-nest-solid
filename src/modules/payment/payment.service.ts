@@ -58,8 +58,10 @@ export class PaymentService {
     cardId: string,
     dto: UpdatePaymentCardDto,
   ): Promise<PaymentCardResponseDto> {
-    const existingCard =
-      await this.paymentCardRepository.findActiveByIdAndUser(cardId, userId);
+    const existingCard = await this.paymentCardRepository.findActiveByIdAndUser(
+      cardId,
+      userId,
+    );
     if (!existingCard) {
       throw new NotFoundException('Payment card not found');
     }
@@ -112,8 +114,10 @@ export class PaymentService {
     userId: string,
     cardId: string,
   ): Promise<PaymentCardResponseDto> {
-    const existingCard =
-      await this.paymentCardRepository.findActiveByIdAndUser(cardId, userId);
+    const existingCard = await this.paymentCardRepository.findActiveByIdAndUser(
+      cardId,
+      userId,
+    );
     if (!existingCard) {
       throw new NotFoundException('Payment card not found');
     }
@@ -135,8 +139,10 @@ export class PaymentService {
     userId: string,
     cardId: string,
   ): Promise<PaymentCardResponseDto> {
-    const existingCard =
-      await this.paymentCardRepository.findActiveByIdAndUser(cardId, userId);
+    const existingCard = await this.paymentCardRepository.findActiveByIdAndUser(
+      cardId,
+      userId,
+    );
     if (!existingCard) {
       throw new NotFoundException('Payment card not found');
     }
