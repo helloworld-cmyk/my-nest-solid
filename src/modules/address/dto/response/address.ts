@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsDate,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class AddressResponseDto {
   @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
@@ -37,12 +31,4 @@ export class AddressResponseDto {
   @ApiProperty({ example: false })
   @IsBoolean()
   isDefault!: boolean;
-
-  @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
-  @IsDate()
-  createdAt!: Date;
-
-  @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
-  @IsDate()
-  updatedAt!: Date;
 }

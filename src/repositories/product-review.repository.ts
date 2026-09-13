@@ -92,10 +92,7 @@ export class ProductReviewRepository {
     return this.prisma.productReview.create({ data });
   }
 
-  /**
-   * POST /catalog/products/:id/reviews — tạo review và recompute
-   * ratingAvg + reviewCount của product trong cùng một transaction.
-   */
+
   async createAndRecalcRating(
     data: Prisma.ProductReviewCreateInput,
   ): Promise<{ review: ReviewWithUser; average: number; count: number }> {
