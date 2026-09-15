@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { hash, verify } from 'argon2';
 import { UserRepository } from '../../repositories/user.repository.js';
 import { AuthResponseMapper } from '../../utils/converDtoResponse/auth.js';
@@ -78,12 +78,12 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-      expiresIn: accessExpiresIn as any,
+      expiresIn: accessExpiresIn as JwtSignOptions['expiresIn'],
     });
 
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: refreshExpiresIn as any,
+      expiresIn: refreshExpiresIn as JwtSignOptions['expiresIn'],
     });
 
     return { accessToken, refreshToken, fcmToken: 'default_fcm_token' };

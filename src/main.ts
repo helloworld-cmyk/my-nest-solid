@@ -38,4 +38,4 @@ async function bootstrap() {
   //start server
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

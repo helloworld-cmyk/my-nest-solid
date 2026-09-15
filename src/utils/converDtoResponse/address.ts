@@ -21,8 +21,6 @@ export class AddressResponseMapper {
       email: address.email,
       phone: address.phone,
       isDefault: address.isDefault,
-      createdAt: address.createdAt,
-      updatedAt: address.updatedAt,
     };
   }
 
