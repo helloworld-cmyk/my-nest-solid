@@ -92,7 +92,6 @@ export class ProductReviewRepository {
     return this.prisma.productReview.create({ data });
   }
 
-
   async createAndRecalcRating(
     data: Prisma.ProductReviewCreateInput,
   ): Promise<{ review: ReviewWithUser; average: number; count: number }> {

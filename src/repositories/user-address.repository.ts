@@ -9,8 +9,6 @@ const addressResponseSelect = {
   email: true,
   address: true,
   isDefault: true,
-  createdAt: true,
-  updatedAt: true,
 } satisfies Prisma.UserAddressSelect;
 
 @Injectable()

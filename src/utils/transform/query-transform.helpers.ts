@@ -3,9 +3,11 @@ export function isEmptyQueryValue(value: unknown): boolean {
 }
 
 export function flattenQueryValues(value: unknown): unknown[] {
-  const values = Array.isArray(value) ? value : [value];
+  const values: unknown[] = Array.isArray(value)
+    ? (value as unknown[])
+    : [value];
 
-  return values.flatMap((entry) => {
+  return values.flatMap((entry): unknown[] => {
     if (typeof entry !== 'string' || !entry.includes(',')) {
       return [entry];
     }

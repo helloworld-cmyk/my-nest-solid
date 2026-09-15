@@ -1,5 +1,18 @@
-import { Controller, Get, HttpStatus, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guard/jwt.guard.js';
 import { ListProductsQueryDto } from './dto/request/list-products.query.js';
 import { SearchProductsQueryDto } from './dto/request/search-products.query.js';
 import { FilterOptionsResponseDto } from './dto/response/filter-options.js';
@@ -18,6 +31,8 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'List products with filters, sort and pagination' })
   @ApiResponse({
     status: 200,
@@ -29,6 +44,8 @@ export class ProductController {
   }
 
   @Get('home')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get home products (hot deals, new arrivals, on sale)',
   })
@@ -42,6 +59,8 @@ export class ProductController {
   }
 
   @Get('search')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Search products by keyword' })
   @ApiResponse({
     status: 200,
@@ -57,6 +76,8 @@ export class ProductController {
   }
 
   @Get('filters')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get available filter options for products' })
   @ApiResponse({
     status: 200,
@@ -68,6 +89,8 @@ export class ProductController {
   }
 
   @Get(':slug/related')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get related products by product slug' })
   @ApiResponse({
     status: 200,
@@ -84,6 +107,8 @@ export class ProductController {
   }
 
   @Get(':slug')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get product detail by slug' })
   @ApiResponse({
     status: 200,
