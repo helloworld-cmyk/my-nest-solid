@@ -12,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { ProductModule } from './modules/product/product.module.js';
 import { ReviewModule } from './modules/review/review.module.js';
 import { WishlistModule } from './modules/wishlist/wishlist.module.js';
+import { TestSocketModule } from './modules/test-socket/test-socket.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -25,6 +26,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module.js';
     WishlistModule,
     ReviewModule,
     CouponModule,
+    TestSocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -19,6 +19,7 @@ import {
   CategoryResponseDto,
 } from './dto/response/category.js';
 import { JwtAdminGuard } from '../auth/guard/jwt-admin.guard.js';
+import { JwtAuthGuard } from '../auth/guard/jwt.guard.js';
 
 @ApiTags('categories')
 @Controller('categories')
@@ -26,6 +27,8 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get active categories' })
   @ApiResponse({
     status: 200,

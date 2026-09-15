@@ -39,9 +39,9 @@ Schema (`prisma/schema/`, không migration trong scope này):
 - [x] **#0a Cốt lõi chung**: `PrismaModule` global + `PaginationQueryDto`/`PaginationMetaDto` — xong.
 - [ ] **#0b Seed script** (category/product mẫu) — chưa làm. Mọi module catalog đều cần dữ liệu mẫu.
 - [x] **#1a Category** (`GET /categories` public, `POST /categories` admin) — xong.
-- [ ] **#1b Product** (`GET /products`, `/products/home|search|filters`, `/products/:slug`, `/products/:slug/related` — toàn public) — xem plan_catalog phase 3.
-- [ ] **#1c Wishlist** (`GET/POST/DELETE /wishlist`, `JwtAuthGuard`) — xem plan_catalog phase 4. `WishlistRepository` đã sẵn.
-- [ ] **#1d Review** (`GET /products/:productId/reviews` public + `POST` auth) — xem plan_catalog phase 5. `ProductReviewRepository.createAndRecalcRating` đã sẵn. Rule "chỉ review khi đã mua" để sau khi có Order.
+- [x] **#1b Product** (`GET /products`, `/products/home|search|filters`, `/products/:slug`, `/products/:slug/related` — toàn public) — xem plan_catalog phase 3.
+- [x] **#1c Wishlist** (`GET/POST/DELETE /wishlist`, `JwtAuthGuard`) — xem plan_catalog phase 4. `WishlistRepository` đã sẵn.
+- [x] **#1d Review** (`GET /products/:productId/reviews` public + `POST` auth) — xem plan_catalog phase 5. `ProductReviewRepository.createAndRecalcRating` đã sẵn. Rule "chỉ review khi đã mua" để sau khi có Order.
 - [x] **#2 Address** — xong, Flutter có thể bỏ mock.
 - [x] **#3 PaymentCard** — xong, Flutter có thể bỏ mock.
 - [ ] **#4 Profile** — thiếu `PATCH /users/me`, đổi mật khẩu, upload avatar (Flutter đã có `change_profile`, `crop_avatar`).
@@ -64,3 +64,30 @@ Schema (`prisma/schema/`, không migration trong scope này):
 - Response trong envelope `BaseResponse`; mỗi list response tự khai báo `{ items: T[]; pagination: PaginationMetaDto }`.
 - Sau mỗi module: `pnpm run lint` → `pnpm run test` → `pnpm run build` (lint baseline hiện có 2 errors pre-existing ở `auth.service.ts` + 1 warning ở `main.ts`).
 - **KHÔNG đọc `.env`** — chỉ xem `.env.example`.
+
+## 6. Socket — Order tracking realtime (đã chốt 11/09/2026)
+
+> Sếp yêu cầu thêm socket. Đã so sánh 4 phương án (order tracking / order+stock / chat user-shop / admin notification) → **chốt #1 Order tracking realtime**: giá trị cao nhất cho app bán hàng, demo dễ (admin đổi status → Flutter thấy ngay), không cần migration DB.
+
+**Phạm vi:**
+- User nhận push trạng thái đơn: `PENDING_PAYMENT → CONFIRMED → PROCESSING → SHIPPED → DELIVERED / CANCELLED / REFUNDED` (dùng nguyên enum `OrderStatus` + `PaymentStatus` trong `prisma/schema/order.model.prisma`).
+- Admin nhận `order:created` về dashboard.
+- Socket chỉ báo "có đổi", client gọi lại `GET /orders/:id` lấy detail (source of truth, giữ envelope `BaseResponse`).
+- Các phương án còn lại để phase sau: cập nhật tồn kho realtime (làm kèm sau khi có Order), chat user-shop (cần thêm model `Conversation/Message` + migration — tốn effort nhất), admin feed mở rộng, coupon flash-sale broadcast.
+
+**Thiết kế:**
+- Tech: `@nestjs/websockets` + `@nestjs/platform-socket.io` (server), `socket_io_client` (Flutter). Chưa cần Redis adapter; scale mới thêm `@socket.io/redis-adapter` + sticky session.
+- Module mới `src/modules/realtime/`: `realtime.module.ts` (import `JwtModule`, export `RealtimeService`), `order.gateway.ts` (thin như controller: chỉ join/leave/auth, không business logic), `realtime.service.ts` (`emitOrderCreated()`, `emitStatusUpdated()`), `dto/` cho payload join + status_updated.
+- Auth: verify `JWT_ACCESS_SECRET` trong `handleConnection` bằng `JwtService.verify()`, tái dùng `JwtPayload` / `AuthenticatedUser` từ `modules/auth/strategy/jwt.strategy.ts` (không dùng `JwtAuthGuard` vì HTTP-only). Token sai → disconnect. Phân biệt `Role.USER` / `Role.ADMIN` từ Prisma generated enum.
+- Rooms + events:
+
+| Hướng | Event | Room | Ghi chú |
+|---|---|---|---|
+| client → server | `order:join { orderId }` | — | server check `order.userId === socket.user.id` hoặc `isAdmin` rồi mới cho join `order:{orderId}` |
+| client → server | `order:leave { orderId }` | — | — |
+| server → admin | `order:created { orderId, totalAmount }` | `admin:orders` | dashboard admin join room này sau khi verify ADMIN |
+| server → user | `order:status_updated { orderId, status, paymentStatus, updatedAt }` | `order:{orderId}` + `user:{userId}` | app Flutter join `user:{userId}` lúc connect + `order:{orderId}` khi mở chi tiết đơn |
+
+- Nối vào Order: repo hiện **chưa có `OrderModule` REST** (mới có Prisma model) → gateway làm trước làm hạ tầng, khi làm roadmap **#7 Order / Checkout** thì `OrderService.updateStatus()` chỉ cần gọi 1 dòng `realtimeService.emitStatusUpdated(...)`.
+- Bảo mật: CORS whitelist origin, payload socket chỉ có `orderId` + status (không đưa `addressSnapshot`/thông tin thẻ), ownership check trước khi join room.
+- Effort: ~0.5–1 ngày — `pnpm add @nestjs/websockets @nestjs/platform-socket.io socket.io`, 3 file gateway/service/module + 1 spec, test bằng `socket.io-client` script + Flutter.

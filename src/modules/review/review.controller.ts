@@ -32,6 +32,8 @@ export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get paginated reviews of a product' })
   @ApiParam({ name: 'productId', example: 1 })
   @ApiResponse({

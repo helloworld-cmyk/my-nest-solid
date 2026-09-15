@@ -7,7 +7,6 @@ import { AuthService } from './auth.service';
 import { UserRepository } from '../../repositories/user.repository.js';
 import { JwtStrategy } from './strategy/jwt.strategy.js';
 import { JwtAdminStrategy } from './strategy/jwt-admin.strategy.js';
-import { JwtTokenStrategy } from './strategy/jwt-token.strategy.js';
 
 @Module({
   imports: [
@@ -24,13 +23,7 @@ import { JwtTokenStrategy } from './strategy/jwt-token.strategy.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    UserRepository,
-    AuthService,
-    JwtStrategy,
-    JwtAdminStrategy,
-    JwtTokenStrategy,
-  ],
-  exports: [JwtStrategy, JwtAdminStrategy, JwtTokenStrategy],
+  providers: [UserRepository, AuthService, JwtStrategy, JwtAdminStrategy],
+  exports: [JwtStrategy, JwtAdminStrategy],
 })
 export class AuthModule {}
