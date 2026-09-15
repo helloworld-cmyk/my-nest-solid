@@ -65,8 +65,8 @@ model OrderItem {
   productId Int? 
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
-  variantId Int?
-  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  variantId Int
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
 
   variantSku  String? // snapshot sku
   name        String // tên lúc mua
