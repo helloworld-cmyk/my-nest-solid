@@ -49,6 +49,7 @@ chmod +x .husky/pre-push
 | Triệu chứng                                              | Nguyên nhân                                          | Cách xử lý                                                                     |
 | -------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `git commit` chạy bình thường, không kiểm tra gì          | Hook chưa được cài / `core.hooksPath` chưa set        | `pnpm run prepare`, rồi `git config core.hooksPath`                             |
+| `pnpm install` xong "Done" nhưng hook vẫn không chạy      | Husky skip `prepare` **trong im lặng** (in 1 dòng rồi **exit 0**) do `ignore-scripts`, `HUSKY=0`, hoặc `.git` không nằm ở thư mục hiện tại | Chạy tay `pnpm run prepare` rồi kiểm tra `git config core.hooksPath` |
 | `husky - command not found in PATH=...`                   | Chưa `pnpm install` hoặc thiếu binary trong `node_modules/.bin` | `pnpm install`                                                    |
 | Hook bị `permission denied`                              | File hook mất quyền thực thi                          | `chmod +x .husky/commit-msg .husky/pre-commit`                                 |
 | `husky - commit-msg script failed (code 1)` + lỗi type/subject | Message sai Conventional Commits                 | Sửa message rồi commit lại (`git commit --amend`)                               |

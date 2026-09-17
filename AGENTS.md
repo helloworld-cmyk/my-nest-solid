@@ -11,7 +11,7 @@
 - `pnpm run test:e2e` — e2e tests (from `test/`)
 - `npx prisma migrate dev` — run Prisma migrations (uses `DB_HOST` from `.env`)
 - `npx prisma generate` — regenerate Prisma client
-- `pnpm run prepare` — install Git hooks (Husky); also runs automatically on `pnpm install`
+- `pnpm run prepare` — install/refresh Git hooks (Husky). It runs automatically on `pnpm install`, but can be skipped **silently** → run it manually and verify (see "Git hooks (Husky)")
 - `pnpm exec commitlint --from HEAD~10 --to HEAD --verbose` — audit the last 10 commit messages
 
 ## Verify order
@@ -24,6 +24,25 @@
 - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Header ≤ 100 chars; subject lowercase (no leading capital), no trailing `.`.
 - Scopes (optional, warning-only): `auth`, `profile`, `category`, `product`, `payment`, `address`, `prisma`, `db`, `config`, `swagger`, `socket`, `docker`, `ci`, `deps`, `docs`, `repo`.
 - Before committing, see the local `conventional-commit` skill (`.agents/skills/conventional-commit/SKILL.md`) for the type/scope tables, examples, and hook-troubleshooting steps. Do not use `--no-verify` for anything that will be pushed.
+
+## Git hooks (Husky)
+
+Hooks are not fully committed: `pnpm run prepare` generates `.husky/_/` (gitignored) and sets `core.hooksPath`. Run it **once per clone** and after editing any file in `.husky/`.
+
+```bash
+pnpm run prepare
+git config core.hooksPath   # must print: .husky/_
+ls -la .husky/_             # must list: h, commit-msg, pre-commit
+```
+
+`pnpm install` runs `prepare` automatically, but husky's installer can skip silently (husky prints a one-line message and still exits 0) when `ignore-scripts` is enabled, `HUSKY=0` is set, or `.git` is not in the current directory. **An empty `core.hooksPath` means no hook is running and `git commit` accepts anything** — that is the first thing to check when a bad commit message gets through.
+
+- `.husky/commit-msg` → `pnpm exec commitlint --edit "$1"` — blocks non-conventional messages (rules in `commitlint.config.mjs`).
+- `.husky/pre-commit` → `pnpm run lint` — ESLint + Prettier `--fix`; if it rewrites files, run `git add -u` and commit again.
+- Never edit `.husky/_/*` (generated shims); edit `.husky/<hook>` instead.
+- Bypass only for throwaway WIP (`git commit --no-verify` or `HUSKY=0 git commit`), never for anything that will be pushed.
+- Test without committing: `echo "done" | pnpm exec commitlint` (must fail) / `echo "chore: test" | pnpm exec commitlint` (must pass).
+- Audit history: `pnpm exec commitlint --from HEAD~10 --to HEAD --verbose`. Full troubleshooting: `.agents/skills/conventional-commit/references/husky-setup.md`.
 
 ## Architecture
 

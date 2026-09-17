@@ -29,7 +29,44 @@
 
 ```bash
 $ pnpm install
+$ pnpm run prepare   # install Git hooks (Husky) — see "Git hooks & commit convention"
 ```
+
+## Git hooks & commit convention
+
+Commit messages are enforced by **Husky + commitlint** ([Conventional Commits](https://www.conventionalcommits.org): `type(scope): subject`).
+
+`pnpm install` runs `scripts.prepare` (`husky`) automatically, but husky's installer can **skip silently** (it prints one line and still exits `0`) when `ignore-scripts` is enabled, `HUSKY=0` is set, or `.git` is not in the current directory. So after every clone, run it explicitly and verify:
+
+```bash
+$ pnpm run prepare
+$ git config core.hooksPath   # must print: .husky/_
+$ ls -la .husky/_             # must list: h, commit-msg, pre-commit
+```
+
+If `core.hooksPath` is empty, **no hook is running** and `git commit` will accept any message — just run `pnpm run prepare` again.
+
+Hooks:
+
+- `.husky/pre-commit` → `pnpm run lint` (ESLint + Prettier `--fix`; run `git add -u` if files were rewritten)
+- `.husky/commit-msg` → `pnpm exec commitlint --edit "$1"` (rules in `commitlint.config.mjs`)
+
+A message like `done` is rejected:
+
+```bash
+$ git commit -m "done"
+✖ subject may not be empty [subject-empty]
+✖ type may not be empty [type-empty]
+husky - commit-msg script failed (code 1)
+```
+
+Use `feat(auth): thêm đăng nhập bằng Google`, `fix(product): sửa lỗi phân trang`, `chore(deps): nâng husky lên 9.1.7`, ... Check a message without committing:
+
+```bash
+$ echo "chore: cập nhật dependencies" | pnpm exec commitlint
+```
+
+Skip a hook only for throwaway WIP (`git commit --no-verify` or `HUSKY=0 git commit`) — never for commits that will be pushed. Detailed troubleshooting: [`.agents/skills/conventional-commit/references/husky-setup.md`](.agents/skills/conventional-commit/references/husky-setup.md).
 
 ## Compile and run the project
 
