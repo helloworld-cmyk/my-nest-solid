@@ -312,7 +312,7 @@ Logic đặt trong `NotesService`, controller chỉ điều phối (inject servi
 - Không có token → 401; sai role → 403.
 - Refresh token hoạt động; giải thích được khác biệt access vs refresh token.
 
-### Bài 6 — Nâng cao (chọn 2 trong 4) (3–4 ngày)
+### Bài 6.5 — Nâng cao (chọn 2 trong 4) (3–4 ngày)
 
 Chọn 2 mục để làm quen thêm các thành phần dự án dùng:
 
