@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Socket Test — my-nest-solid</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <style>
+      :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --txt:#e2e8f0; --muted:#94a3b8;
+              --ok:#22c55e; --err:#ef4444; --warn:#f59e0b; --brand:#38bdf8; }
+      * { box-sizing: border-box; }
+      body { margin:0; padding:24px; background:var(--bg); color:var(--txt);
+             font:14px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      main { max-width:960px; margin:0 auto; display:grid; gap:16px; }
+      h1 { font-size:18px; margin:0 0 4px; }
+      h2 { font-size:13px; margin:0 0 12px; color:var(--brand); text-transform:uppercase; letter-spacing:.08em; }
+      code { color:var(--brand); }
+      .muted { color:var(--muted); margin:0; }
+      .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+      .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+      .row + .row { margin-top:10px; }
+      label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted); }
+      label.check { flex-direction:row; align-items:center; gap:6px; }
+      input, textarea { background:#0b1220; border:1px solid var(--line); border-radius:6px;
+                        color:var(--txt); padding:7px 9px; font:inherit; min-width:0; }
+      input:focus, textarea:focus { outline:1px solid var(--brand); }
+      textarea { width:100%; resize:vertical; }
+      button { background:var(--brand); border:0; border-radius:6px; color:#04212f; cursor:pointer;
+               font:inherit; font-weight:700; padding:8px 14px; }
+      button.ghost { background:transparent; border:1px solid var(--line); color:var(--txt); }
+      button:disabled { cursor:not-allowed; opacity:.45; }
+      .badge { border-radius:999px; padding:4px 12px; font-size:12px; font-weight:700; text-transform:uppercase; }
+      .badge.disconnected { background:rgba(239,68,68,.15); color:var(--err); }
+      .badge.connecting { background:rgba(245,158,11,.15); color:var(--warn); }
+      .badge.connected { background:rgba(34,197,94,.15); color:var(--ok); }
+      .counter { display:flex; gap:24px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+      #value { font-size:44px; font-weight:700; line-height:1.1; color:var(--ok); }
+      .counter-state { display:grid; grid-template-columns:repeat(2, minmax(110px, 1fr)); gap:8px 24px; margin:0; }
+      .counter-state dt { color:var(--muted); font-size:11px; }
+      .counter-state dd { margin:0; }
+      #log { background:#0b1220; border:1px solid var(--line); border-radius:8px; height:260px;
+             overflow:auto; padding:10px; }
+      .line { display:flex; gap:8px; white-space:pre-wrap; word-break:break-word; }
+      .line .t { color:#64748b; flex:none; }
+      .line .tag { flex:none; font-weight:700; width:44px; }
+      .line.sys .tag { color:var(--muted); }
+      .line.out .tag, .line.out .m { color:var(--brand); }
+      .line.in .tag, .line.in .m { color:var(--ok); }
+      .line.num .tag, .line.num .m { color:#a78bfa; }
+      .line.err .tag, .line.err .m { color:var(--err); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Socket Test — my-nest-solid</h1>
+        <p class="muted">
+          Gateway <code>CounterGateway</code> · namespace <code>/counter</code> · gửi
+          <code>counter:start</code> / <code>counter:stop</code> / <code>counter:increment</code> ·
+          nhận <code>counter:number</code>, <code>counter:state</code>
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>Kết nối</h2>
+        <div class="row">
+          <label>
+            Server URL
+            <input id="url" value="http://localhost:3000" />
+          </label>
+          <label>
+            Namespace (trống = /)
+            <input id="ns" value="/counter" placeholder="vd: /counter" />
+          </label>
+          <span class="badge disconnected" id="status">disconnected</span>
+        </div>
+        <div class="row">
+          <button id="connect">Kết nối</button>
+          <button id="disconnect" class="ghost" disabled>Ngắt kết nối</button>
+          <span class="muted" id="sid">socket id: —</span>
+        </div>
+      </section>
+
+      <section class="card counter">
+        <div>
+          <p class="muted">Giá trị mới nhất (<code>counter:number</code>)</p>
+          <div id="value">—</div>
+        </div>
+        <dl class="counter-state">
+          <div>
+            <dt>nextValue</dt>
+            <dd id="nextValue">—</dd>
+          </div>
+          <div>
+            <dt>step</dt>
+            <dd id="stepView">—</dd>
+          </div>
+          <div>
+            <dt>intervalMs</dt>
+            <dd id="intervalView">—</dd>
+          </div>
+          <div>
+            <dt>streaming</dt>
+            <dd id="streamingView">—</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2>Điều khiển</h2>
+        <div class="row">
+          <label>
+            step (số nguyên, khác 0)
+            <input id="step" type="number" value="1" />
+          </label>
+          <label>
+            startFrom (trống = không reset)
+            <input id="startFrom" type="number" placeholder="vd: 100" />
+          </label>
+        </div>
+        <div class="row">
+          <button id="start" disabled>counter:start</button>
+          <button id="stop" class="ghost" disabled>counter:stop</button>
+        </div>
+        <div class="row">
+          <button id="incBare" disabled>increment (payload số)</button>
+          <button id="incObj" class="ghost" disabled>increment (payload object)</button>
+        </div>
+        <p class="muted">
+          Gateway tự start stream ngay khi client kết nối (+1 mỗi tick). Dùng startFrom để reset chuỗi,
+          step âm để đếm lùi.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>Gửi event tuỳ ý</h2>
+        <div class="row">
+          <input
+            id="customEvent"
+            list="knownEvents"
+            placeholder="event name"
+            value="counter:increment"
+          />
+          <datalist id="knownEvents">
+            <option value="counter:start"></option>
+            <option value="counter:stop"></option>
+            <option value="counter:increment"></option>
+          </datalist>
+          <button id="customSend" class="ghost" disabled>Emit</button>
+        </div>
+        <textarea id="customPayload" rows="3">{ "step": 2, "startFrom": 10 }</textarea>
+      </section>
+
+      <section class="card">
+        <h2>Log</h2>
+        <div class="row">
+          <label class="check">
+            <input type="checkbox" id="logNumber" />
+            log cả counter:number
+          </label>
+          <label class="check">
+            <input type="checkbox" id="autoScroll" checked />
+            auto scroll
+          </label>
+          <button id="clear" class="ghost">Xoá log</button>
+        </div>
+        <div id="log"></div>
+      </section>
+    </main>
+
+    <script>
+      const EVENTS = {
+        INCREMENT: 'counter:increment',
+        START: 'counter:start',
+        STOP: 'counter:stop',
+        NUMBER: 'counter:number',
+        STATE: 'counter:state',
+      };
+
+      const el = (id) => document.getElementById(id);
+      const fmt = (value) => {
+        if (typeof value === 'string') return value;
+        if (value === undefined) return '';
+        try {
+          return JSON.stringify(value);
+        } catch {
+          return String(value);
+        }
+      };
+
+      let socket = null;
+
+      // Nếu CDN không tải được (offline), thử nạp client do server socket.io tự phục vụ
+      function ensureIoClient(base) {
+        if (typeof io !== 'undefined') return Promise.resolve(true);
+
+        return new Promise((resolve) => {
+          const script = document.createElement('script');
+          script.src = `${base}/socket.io/socket.io.js`;
+          script.onload = () => resolve(typeof io !== 'undefined');
+          script.onerror = () => resolve(false);
+          document.head.appendChild(script);
+        });
+      }
+
+      // ---------- log ----------
+      function log(kind, text) {
+        const box = el('log');
+        const line = document.createElement('div');
+        line.className = `line ${kind}`;
+        line.innerHTML =
+          `<span class="t">${new Date().toLocaleTimeString('vi-VN', { hour12: false })}</span>` +
+          `<span class="tag">${kind}</span><span class="m"></span>`;
+        line.querySelector('.m').textContent = text;
+        box.appendChild(line);
+        if (el('autoScroll').checked) box.scrollTop = box.scrollHeight;
+      }
+
+      // ---------- ui ----------
+      function setStatus(state) {
+        const badge = el('status');
+        badge.textContent = state;
+        badge.className = `badge ${state}`;
+      }
+
+      function setConnectedUi(connected) {
+        el('connect').disabled = connected;
+        el('disconnect').disabled = !connected;
+        ['start', 'stop', 'incBare', 'incObj', 'customSend'].forEach((id) => {
+          el(id).disabled = !connected;
+        });
+        if (!connected) el('sid').textContent = 'socket id: —';
+      }
+
+      function renderState(dto) {
+        el('nextValue').textContent = dto.nextValue ?? '—';
+        el('stepView').textContent = dto.step ?? '—';
+        el('intervalView').textContent = dto.intervalMs ?? '—';
+        el('streamingView').textContent = dto.streaming ? 'true (đang chạy)' : 'false (đã dừng)';
+      }
+
+      function resetView() {
+        el('value').textContent = '—';
+        ['nextValue', 'stepView', 'intervalView', 'streamingView'].forEach((id) => {
+          el(id).textContent = '—';
+        });
+      }
+
+      // ---------- socket ----------
+      async function connect() {
+        if (socket) return;
+
+        const base = el('url').value.trim() || 'http://localhost:3000';
+        let ns = el('ns').value.trim();
+        if (ns && !ns.startsWith('/')) ns = `/${ns}`;
+        const target = ns && ns !== '/' ? `${base}${ns}` : base;
+
+        setStatus('connecting');
+        log('sys', `connecting → ${target}`);
+
+        const ready = await ensureIoClient(base);
+        if (!ready) {
+          setStatus('disconnected');
+          log('err', 'Không nạp được socket.io client — kiểm tra mạng hoặc URL server.');
+          return;
+        }
+
+        socket = io(target, { transports: ['websocket', 'polling'] });
+        bindSocket(target);
+      }
+
+      function bindSocket(target) {
+        socket.on('connect', () => {
+          setStatus('connected');
+          setConnectedUi(true);
+          el('sid').textContent = `socket id: ${socket.id}`;
+          log('sys', `connected → ${target} (id=${socket.id})`);
+        });
+
+        socket.on('disconnect', (reason) => {
+          setStatus('disconnected');
+          setConnectedUi(false);
+          log('sys', `disconnected (reason=${reason})`);
+        });
+
+        socket.on('connect_error', (error) => {
+          setStatus('disconnected');
+          setConnectedUi(false);
+          log('err', `connect_error: ${error.message}`);
+        });
+
+        socket.on(EVENTS.STATE, (dto) => {
+          renderState(dto ?? {});
+          log('in', `${EVENTS.STATE} ${fmt(dto)}`);
+        });
+
+        socket.on(EVENTS.NUMBER, (value) => {
+          el('value').textContent = value;
+          if (el('logNumber').checked) log('num', `${EVENTS.NUMBER} ${fmt(value)}`);
+        });
+
+        // NestJS đẩy lỗi validate/ws exception qua event "exception"
+        socket.on('exception', (error) => log('err', `exception ${fmt(error)}`));
+
+        // Bắt mọi event khác để debug
+        socket.onAny((event, ...args) => {
+          if (event === EVENTS.STATE || event === EVENTS.NUMBER) return;
+          if (event === 'connect' || event === 'disconnect' || event === 'connect_error') return;
+          log('in', `${event} ${args.map(fmt).join(' ')}`);
+        });
+      }
+
+      function disconnect() {
+        if (!socket) return;
+        log('sys', 'disconnecting…');
+        socket.removeAllListeners();
+        socket.disconnect();
+        socket = null;
+        setStatus('disconnected');
+        setConnectedUi(false);
+        resetView();
+      }
+      // ---------- emit ----------
+      function emit(event, payload) {
+        if (!socket || !socket.connected) {
+          log('err', 'Chưa kết nối — bấm "Kết nối" trước.');
+          return false;
+        }
+
+        const hasPayload = payload !== undefined;
+        socket.emit(event, ...(hasPayload ? [payload] : []));
+        log('out', hasPayload ? `${event} ${fmt(payload)}` : event);
+        return true;
+      }
+
+      function readStartFrom() {
+        const raw = el('startFrom').value.trim();
+        if (raw === '') return undefined;
+
+        const value = Number(raw);
+        if (!Number.isInteger(value)) {
+          log('err', 'startFrom phải là số nguyên.');
+          return null;
+        }
+        return value;
+      }
+
+      function readStep() {
+        const value = Number(el('step').value);
+        if (!Number.isInteger(value) || value === 0) {
+          log('err', 'step phải là số nguyên khác 0.');
+          return null;
+        }
+        return value;
+      }
+
+      // ---------- events ----------
+      el('connect').addEventListener('click', connect);
+      el('disconnect').addEventListener('click', disconnect);
+      el('clear').addEventListener('click', () => {
+        el('log').innerHTML = '';
+      });
+
+      el('start').addEventListener('click', () => {
+        const startFrom = readStartFrom();
+        if (startFrom === null) return;
+        emit(EVENTS.START, startFrom === undefined ? {} : { startFrom });
+      });
+
+      el('stop').addEventListener('click', () => emit(EVENTS.STOP));
+
+      el('incBare').addEventListener('click', () => {
+        const step = readStep();
+        if (step === null) return;
+        emit(EVENTS.INCREMENT, step);
+      });
+
+      el('incObj').addEventListener('click', () => {
+        const step = readStep();
+        if (step === null) return;
+
+        const startFrom = readStartFrom();
+        if (startFrom === null) return;
+
+        const payload = { step };
+        if (startFrom !== undefined) payload.startFrom = startFrom;
+        emit(EVENTS.INCREMENT, payload);
+      });
+
+      el('step').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') el('incBare').click();
+      });
+
+      el('customSend').addEventListener('click', () => {
+        const event = el('customEvent').value.trim();
+        if (!event) {
+          log('err', 'Chưa nhập event name.');
+          return;
+        }
+
+        const raw = el('customPayload').value.trim();
+        let payload;
+        if (raw !== '') {
+          try {
+            payload = JSON.parse(raw);
+          } catch (error) {
+            log('err', `Payload JSON không hợp lệ: ${error.message}`);
+            return;
+          }
+        }
+        emit(event, payload);
+      });
+
+      window.addEventListener('beforeunload', () => {
+        if (socket) socket.disconnect();
+      });
+
+      setConnectedUi(false);
+      log('sys', 'Sẵn sàng — bấm "Kết nối" để mở socket tới server.');
+    </script>
+  </body>
+</html>

@@ -45,8 +45,8 @@ Schema (`prisma/schema/`, không migration trong scope này):
 - [x] **#2 Address** — xong, Flutter có thể bỏ mock.
 - [x] **#3 PaymentCard** — xong, Flutter có thể bỏ mock.
 - [ ] **#4 Profile** — thiếu `PATCH /users/me`, đổi mật khẩu, upload avatar (Flutter đã có `change_profile`, `crop_avatar`).
-- [ ] **#5 Cart** (`GET /cart`, add/update/remove item, validate `variant.stock` + `isActive`) — tiền đề của checkout.
-- [ ] **#6 Coupon** (`GET /coupons` active, `POST /coupons/validate`) — validate trước, redeem nằm trong Order.
+- [x] **#5 Cart** (`GET /cart`, add/update/remove item, validate `variant.stock` + `isActive`) — tiền đề của checkout.
+- [x] **#6 Coupon** (`GET /coupons` active, `POST /coupons/validate`) — validate trước, redeem nằm trong Order.
 - [ ] **#7 Order / Checkout** (`POST /orders` transaction: tạo Order + OrderItem snapshot, trừ stock, tăng `soldCount`, ghi `CouponRedemption`, xoá cart; `GET /orders`, `GET /orders/:id`, `PATCH /orders/:id/cancel`) — phức tạp nhất: `idempotencyKey`, `addressSnapshot`, `paymentMethod` COD/CARD.
 - [ ] **#8 *(Phase sau)***: Device/Session/FCM notifications, cổng thanh toán thật, Admin CRUD products/coupons/dashboard, moderation review (schema `ProductReview` chưa có `isHidden/status` nên admin chỉ DELETE được).
 
