@@ -1,0 +1,62 @@
+name: my-nest-solid
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: my-nest-solid-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      TZ: ${TZ:-Asia/Ho_Chi_Minh}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-mydb}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - my-nest-solid-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: my-nest-solid:latest
+    container_name: my-nest-solid-app
+    restart: unless-stopped
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgresql://${DB_USERNAME:-postgres}:${DB_PASSWORD:-123456}@postgres:5432/${DB_DATABASE:-mydb}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    command: >
+      sh -c "node_modules/.bin/prisma migrate deploy && node dist/src/main.js"
+    networks:
+      - my-nest-solid-net
+
+volumes:
+  postgres_data:
+    name: my-nest-solid-postgres-data
+
+networks:
+  my-nest-solid-net:
+    driver: bridge

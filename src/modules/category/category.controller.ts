@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -13,12 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CategoryService } from './category.service.js';
-import { CreateCategoryDto } from './dto/request/create-category.js';
-import {
-  CategoryListItemDto,
-  CategoryResponseDto,
-} from './dto/response/category.js';
-import { JwtAdminGuard } from '../auth/guard/jwt-admin.guard.js';
+import { CategoryListItemDto } from './dto/response/category.js';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard.js';
 
 @ApiTags('categories')
@@ -40,28 +28,29 @@ export class CategoryController {
     return this.categoryService.getCategories();
   }
 
-  @Post()
-  @UseGuards(JwtAdminGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a category (admin only)' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Category created successfully',
-    type: CategoryResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Unauthorized - missing or invalid token',
-  })
-  @ApiResponse({
-    status: HttpStatus.FORBIDDEN,
-    description: 'Forbidden - admin access required',
-  })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'Conflict - a category with this slug already exists',
-  })
-  createCategory(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoryService.createCategory(createCategoryDto);
-  }
+  // TODO: temporarily disabled - admin-only create category endpoint
+  // @Post()
+  // @UseGuards(JwtAdminGuard)
+  // @ApiBearerAuth()
+  // @ApiOperation({ summary: 'Create a category (admin only)' })
+  // @ApiResponse({
+  //   status: HttpStatus.CREATED,
+  //   description: 'Category created successfully',
+  //   type: CategoryResponseDto,
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.UNAUTHORIZED,
+  //   description: 'Unauthorized - missing or invalid token',
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.FORBIDDEN,
+  //   description: 'Forbidden - admin access required',
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.CONFLICT,
+  //   description: 'Conflict - a category with this slug already exists',
+  // })
+  // createCategory(@Body() createCategoryDto: CreateCategoryDto) {
+  //   return this.categoryService.createCategory(createCategoryDto);
+  // }
 }

@@ -33,6 +33,18 @@ export class PaymentCardRepository {
     });
   }
 
+  findDetailActiveByIdAndUser(id: string, userId: string) {
+    return this.prisma.paymentCard.findFirst({
+      where: { id, userId, isActive: true },
+      select: {
+        id: true,
+        brand: true,
+        last4: true,
+        isDefault: true,
+      },
+    });
+  }
+
   findActiveByTokenForUser(cardToken: string, userId: string) {
     return this.prisma.paymentCard.findFirst({
       where: { cardToken, userId, isActive: true },

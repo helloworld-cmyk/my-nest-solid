@@ -8,7 +8,7 @@ import { ResponseInterceptor } from './interceptor/interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  //cors (required for socket.io + external test clients)
+  //cors
   app.enableCors({ origin: '*' });
 
   //validation

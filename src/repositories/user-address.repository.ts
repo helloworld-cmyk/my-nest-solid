@@ -29,6 +29,20 @@ export class UserAddressRepository {
     });
   }
 
+  findDetailByIdAndUser(id: string, userId: string) {
+    return this.prisma.userAddress.findFirst({
+      where: { id, userId },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        address: true,
+        isDefault: true,
+      },
+    });
+  }
+
   findAllByUserId(userId: string) {
     return this.prisma.userAddress.findMany({
       where: { userId },

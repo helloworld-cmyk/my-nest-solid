@@ -11,10 +11,19 @@
 - `pnpm run test:e2e` — e2e tests (from `test/`)
 - `npx prisma migrate dev` — run Prisma migrations (uses `DB_HOST` from `.env`)
 - `npx prisma generate` — regenerate Prisma client
+- `pnpm run prepare` — install Git hooks (Husky); also runs automatically on `pnpm install`
+- `pnpm exec commitlint --from HEAD~10 --to HEAD --verbose` — audit the last 10 commit messages
 
 ## Verify order
 
 `lint` → `test` → `build`
+
+## Commits
+
+- **Conventional Commits** are enforced by Husky + commitlint: `type(scope): subject` (e.g. `feat(auth): thêm đăng nhập Google`). Git hooks live in `.husky/` (`commit-msg` → `pnpm exec commitlint --edit "$1"`, `pre-commit` → `pnpm run lint`); rules live in `commitlint.config.mjs`.
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Header ≤ 100 chars; subject lowercase (no leading capital), no trailing `.`.
+- Scopes (optional, warning-only): `auth`, `profile`, `category`, `product`, `payment`, `address`, `prisma`, `db`, `config`, `swagger`, `socket`, `docker`, `ci`, `deps`, `docs`, `repo`.
+- Before committing, see the local `conventional-commit` skill (`.agents/skills/conventional-commit/SKILL.md`) for the type/scope tables, examples, and hook-troubleshooting steps. Do not use `--no-verify` for anything that will be pushed.
 
 ## Architecture
 
@@ -43,6 +52,16 @@
 - Return types are the response DTO (e.g. `Promise<ProductDetailDto>`); mapping from persistence rows happens in `utils/converDtoResponse/` mappers, not inline in services.
 - Magic numbers become named module-level constants (e.g. `RELATED_LIMIT`, `HOME_PRODUCTS_SIZE` in `product.service.ts`).
 - Default values are applied in the service (`query.page ?? 1`, `query.limit ?? 20`, `query.sort ?? 'newest'`).
+
+## Cart / Checkout invariants
+
+- Every purchasable unit is a `ProductVariant`, never a bare `Product`. `Product` holds catalog info (name, base price); `stock` and `isActive` live only on `ProductVariant`.
+- `AddCartItemDto` requires both `productId` and `variantId` — whenever `productId` is sent, `variantId` is mandatory and must belong to that `productId`.
+- `CartService.addItem` / `updateItem` always validate `variant.isActive` and `variant.stock`; legacy cart rows without a variant are rejected with `BadRequestException('Cart item missing variant')`.
+- `CartRepository.findItemByCartProductVariant` / `createItem` take `variantId: number` (never null); `CartItem.variantId` and `OrderItem.variantId` are `NOT NULL` in the schema (`OrderItem.variant` uses `onDelete: Restrict` — deactivate with `isActive: false` instead of hard-deleting an ordered variant).
+- A sellable product must always have ≥1 variant. Postgres cannot enforce "at least one child" declaratively, so enforce it at write time: product seeds / future admin create-product must create the product plus its variants (a default variant with `colorHexCode: null, size: null` for items without options — the `@@unique([productId, colorHexCode, size])` allows exactly one per product) in a single transaction. Never activate (`status: ACTIVE`) a product with zero variants.
+- `CartItemResponseDto.variantId` / `variant` are non-nullable, matching the `NOT NULL` columns; mapper and service assume the variant is always present.
+- Future `Order`/checkout code must follow the same rule: read price override from the variant (fallback to product price), snapshot `colorHexCode`/`size` into `OrderItem`, and check/decrement `ProductVariant.stock` only — never `Product` stock (there is no such column).
 
 ## DTOs
 
