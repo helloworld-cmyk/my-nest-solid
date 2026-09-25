@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Role } from '../../../../prisma/generated/prisma/enums.js';
+import { I18nTranslator } from '../../../i18n/i18n.translator.js';
 import { UserRepository } from '../../../repositories/user.repository.js';
 
 export interface JwtPayload {
@@ -26,6 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
+    private readonly translator: I18nTranslator,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -36,12 +38,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     if (!payload.sub) {
-      throw new UnauthorizedException('Invalid token payload');
+      throw new UnauthorizedException(
+        this.translator.t('auth.invalidTokenPayload'),
+      );
     }
 
     const user = await this.userRepository.findById(payload.sub);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(this.translator.t('auth.userNotFound'));
     }
 
     return {

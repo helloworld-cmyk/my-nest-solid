@@ -5,10 +5,8 @@ import type {
   CouponListResponseDto,
   ValidateCouponResponseDto,
 } from '../../modules/coupon/dto/response/coupon.js';
-
-function roundMoney(amount: number): number {
-  return Math.round(amount * 100) / 100;
-}
+import { roundMoney } from '../money/index.js';
+import { buildPaginationMeta } from '../pagination/index.js';
 
 export class CouponResponseMapper {
   private constructor() {}
@@ -41,12 +39,7 @@ export class CouponResponseMapper {
   ): CouponListResponseDto {
     return {
       items: CouponResponseMapper.toCouponItems(coupons),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
-      },
+      pagination: buildPaginationMeta(page, limit, total),
     };
   }
 

@@ -1,0 +1,14 @@
+{
+  "idempotencyKeyUsed": "Khóa idempotency đã được sử dụng",
+  "addressNotFound": "Không tìm thấy địa chỉ",
+  "paymentCardIdRequired": "Cần có paymentCardId khi paymentMethod là CARD",
+  "paymentCardNotFound": "Không tìm thấy thẻ thanh toán",
+  "cartEmpty": "Giỏ hàng đang trống",
+  "itemMissingVariant": "Sản phẩm trong giỏ thiếu phiên bản",
+  "variantNotAvailable": "Phiên bản sản phẩm hiện không khả dụng",
+  "notEnoughStock": "Không đủ hàng trong kho",
+  "couponNotFound": "Không tìm thấy mã giảm giá",
+  "orderNotFoundAfterCreation": "Không tìm thấy đơn hàng sau khi tạo",
+  "orderNotFound": "Không tìm thấy đơn hàng",
+  "cannotCancel": "Đơn hàng không thể hủy nữa"
+}

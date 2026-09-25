@@ -17,7 +17,7 @@ import {
 import { JwtAuthGuard } from '../auth/guard/jwt.guard.js';
 import { CouponService } from './coupon.service.js';
 import { ListCouponsQueryDto } from './dto/request/list-coupons.query.js';
-import { ValidateCouponDto } from './dto/request/validate-coupon.js';
+import { ValidateCouponRequestDto } from './dto/request/validate-coupon.js';
 import {
   CouponListResponseDto,
   ValidateCouponResponseDto,
@@ -65,7 +65,7 @@ export class CouponController {
   })
   validateCoupon(
     @Request() req: { user: { id: string } },
-    @Body() dto: ValidateCouponDto,
+    @Body() dto: ValidateCouponRequestDto,
   ) {
     return this.couponService.validateCoupon(req.user.id, dto);
   }

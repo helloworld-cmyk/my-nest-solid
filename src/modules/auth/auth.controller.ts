@@ -1,9 +1,10 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/request/login.js';
-import { RegisterDto } from './dto/request/register.js';
-import { RefreshTokenDto } from './dto/request/refresh.js';
+import { FirebaseLoginRequestDto } from './dto/request/firebase-login.js';
+import { LoginRequestDto } from './dto/request/login.js';
+import { RefreshTokenRequestDto } from './dto/request/refresh.js';
+import { RegisterRequestDto } from './dto/request/register.js';
 import { LoginResponseDto } from './dto/response/login.js';
 import { RefreshTokenResponseDto } from './dto/response/refresh.js';
 import { RegisterResponseDto } from './dto/response/register.js';
@@ -25,8 +26,8 @@ export class AuthController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Invalid credentials',
   })
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  login(@Body() dto: LoginRequestDto) {
+    return this.authService.login(dto);
   }
 
   @Post('register')
@@ -40,8 +41,8 @@ export class AuthController {
     status: HttpStatus.CONFLICT,
     description: 'Email is already registered',
   })
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  register(@Body() dto: RegisterRequestDto) {
+    return this.authService.register(dto);
   }
 
   @Post('refresh-token')
@@ -56,7 +57,33 @@ export class AuthController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Invalid refresh token',
   })
-  refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto);
+  refreshToken(@Body() dto: RefreshTokenRequestDto) {
+    return this.authService.refreshToken(dto);
+  }
+
+  @Post('firebase')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Login with Firebase OAuth (Google/Facebook/GitHub)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Firebase login successful',
+    type: LoginResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid Firebase ID token',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Email already registered with different provider',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Unsupported provider or missing email',
+  })
+  firebaseLogin(@Body() dto: FirebaseLoginRequestDto) {
+    return this.authService.firebaseLogin(dto);
   }
 }

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
@@ -8,7 +9,9 @@ import {
   Matches,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { BaseRequestDto } from '../../../../common/dto/base-request.dto.js';
 
 export class CreatePaymentCardDto {
   @ApiProperty({
@@ -55,4 +58,11 @@ export class CreatePaymentCardDto {
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;
+}
+
+export class CreatePaymentCardRequestDto extends BaseRequestDto<CreatePaymentCardDto> {
+  @ApiProperty({ type: () => CreatePaymentCardDto })
+  @ValidateNested()
+  @Type(() => CreatePaymentCardDto)
+  declare data: CreatePaymentCardDto;
 }

@@ -4,11 +4,14 @@ import {
   ExceptionFilter,
   HttpStatus,
 } from '@nestjs/common';
-import { Prisma } from '../../prisma/generated/prisma/client.js';
+import { Prisma } from '../../../prisma/generated/prisma/client.js';
 import { Response } from 'express';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClientKnownRequestError> {
+  constructor(private readonly translator: I18nTranslator) {}
+
   catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
 
@@ -23,7 +26,7 @@ export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClien
        */
       case 'P2002':
         statusCode = HttpStatus.CONFLICT;
-        message = 'Resource already exists';
+        message = this.translator.t('common.resourceAlreadyExists');
         break;
       /**
        * Record không tồn tại
@@ -32,7 +35,7 @@ export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClien
        */
       case 'P2025':
         statusCode = HttpStatus.NOT_FOUND;
-        message = 'Resource not found';
+        message = this.translator.t('common.resourceNotFound');
         break;
 
       /**
@@ -42,7 +45,7 @@ export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClien
        */
       case 'P2003':
         statusCode = HttpStatus.CONFLICT;
-        message = 'Related resource does not exist';
+        message = this.translator.t('common.relatedNotFound');
         break;
 
       /**
@@ -50,7 +53,7 @@ export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClien
        */
       case 'P2000':
         statusCode = HttpStatus.BAD_REQUEST;
-        message = 'Value is too long';
+        message = this.translator.t('common.valueTooLong');
         break;
 
       /**
@@ -58,7 +61,7 @@ export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClien
        */
       case 'P2006':
         statusCode = HttpStatus.BAD_REQUEST;
-        message = 'Invalid value';
+        message = this.translator.t('common.invalidValue');
         break;
 
       /**
@@ -66,7 +69,7 @@ export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClien
        */
       case 'P2011':
         statusCode = HttpStatus.BAD_REQUEST;
-        message = 'Required field cannot be null';
+        message = this.translator.t('common.requiredNotNull');
         break;
 
       /**
@@ -74,7 +77,7 @@ export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClien
        */
       case 'P2012':
         statusCode = HttpStatus.BAD_REQUEST;
-        message = 'Required value is missing';
+        message = this.translator.t('common.requiredMissing');
         break;
 
       /**
@@ -82,12 +85,12 @@ export class PrismaExceptionFilter implements ExceptionFilter<Prisma.PrismaClien
        */
       case 'P2014':
         statusCode = HttpStatus.CONFLICT;
-        message = 'Relation constraint violation';
+        message = this.translator.t('common.relationViolation');
         break;
 
       default:
         statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-        message = 'Database error';
+        message = this.translator.t('common.databaseError');
     }
 
     response.status(statusCode).json({

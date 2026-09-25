@@ -1,0 +1,5 @@
+{
+  "notFound": "Product not found",
+  "slugNotFound": "Product with slug '{slug}' not found",
+  "keywordRequired": "Query \"keyword\" is required"
+}

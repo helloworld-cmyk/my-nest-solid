@@ -18,8 +18,8 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard.js';
 import { PaymentService } from './payment.service.js';
-import { CreatePaymentCardDto } from './dto/request/create-payment-card.js';
-import { UpdatePaymentCardDto } from './dto/request/update-payment-card.js';
+import { CreatePaymentCardRequestDto } from './dto/request/create-payment-card.js';
+import { UpdatePaymentCardRequestDto } from './dto/request/update-payment-card.js';
 import { PaymentCardResponseDto } from './dto/response/payment-card.js';
 
 @ApiTags('payment')
@@ -64,7 +64,7 @@ export class PaymentController {
   })
   addCard(
     @Request() req: { user: { id: string } },
-    @Body() dto: CreatePaymentCardDto,
+    @Body() dto: CreatePaymentCardRequestDto,
   ) {
     return this.paymentService.addCard(req.user.id, dto);
   }
@@ -85,7 +85,7 @@ export class PaymentController {
   updateCard(
     @Request() req: { user: { id: string } },
     @Param('id') id: string,
-    @Body() dto: UpdatePaymentCardDto,
+    @Body() dto: UpdatePaymentCardRequestDto,
   ) {
     return this.paymentService.updateCard(req.user.id, id, dto);
   }

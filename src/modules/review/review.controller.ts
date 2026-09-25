@@ -18,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard.js';
-import { CreateReviewDto } from './dto/request/create-review.js';
+import { CreateReviewRequestDto } from './dto/request/create-review.js';
 import { ListReviewsQueryDto } from './dto/request/list-reviews.query.js';
 import {
   ReviewListResponseDto,
@@ -77,7 +77,7 @@ export class ReviewController {
   createReview(
     @Param('productId', ParseIntPipe) productId: number,
     @Request() req: { user: { id: string } },
-    @Body() dto: CreateReviewDto,
+    @Body() dto: CreateReviewRequestDto,
   ) {
     return this.reviewService.createReview(productId, req.user.id, dto);
   }

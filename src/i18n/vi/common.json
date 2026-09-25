@@ -1,0 +1,13 @@
+{
+  "success": "Thành công",
+  "internalError": "Lỗi hệ thống",
+  "resourceAlreadyExists": "Dữ liệu đã tồn tại",
+  "resourceNotFound": "Không tìm thấy dữ liệu",
+  "relatedNotFound": "Dữ liệu liên quan không tồn tại",
+  "valueTooLong": "Giá trị quá dài",
+  "invalidValue": "Giá trị không hợp lệ",
+  "requiredNotNull": "Trường bắt buộc không được để trống",
+  "requiredMissing": "Thiếu giá trị bắt buộc",
+  "relationViolation": "Vi phạm ràng buộc liên kết",
+  "databaseError": "Lỗi cơ sở dữ liệu"
+}

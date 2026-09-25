@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsInt, IsOptional, Min, ValidateNested } from 'class-validator';
+import { BaseRequestDto } from '../../../../common/dto/base-request.dto.js';
 
 export class AddCartItemDto {
   @ApiProperty({ example: 1, description: 'ID of the product to add' })
@@ -29,4 +30,11 @@ export class AddCartItemDto {
   @IsInt()
   @Min(1)
   quantity?: number;
+}
+
+export class AddCartItemRequestDto extends BaseRequestDto<AddCartItemDto> {
+  @ApiProperty({ type: () => AddCartItemDto })
+  @ValidateNested()
+  @Type(() => AddCartItemDto)
+  declare data: AddCartItemDto;
 }

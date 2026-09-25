@@ -4,12 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ProductStatus } from '../../../prisma/generated/prisma/enums.js';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 import { CartRepository } from '../../repositories/cart.repository.js';
 import { ProductRepository } from '../../repositories/product.repository.js';
 import { ProductVariantRepository } from '../../repositories/product-variant.repository.js';
 import { CartResponseMapper } from '../../utils/converDtoResponse/cart.js';
-import { AddCartItemDto } from './dto/request/add-cart-item.js';
-import { UpdateCartItemDto } from './dto/request/update-cart-item.js';
+import { AddCartItemRequestDto } from './dto/request/add-cart-item.js';
+import { UpdateCartItemRequestDto } from './dto/request/update-cart-item.js';
 import { CartResponseDto } from './dto/response/cart.js';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class CartService {
     private readonly cartRepository: CartRepository,
     private readonly productRepository: ProductRepository,
     private readonly productVariantRepository: ProductVariantRepository,
+    private readonly translator: I18nTranslator,
   ) {}
 
   async getCart(userId: string): Promise<CartResponseDto> {
@@ -25,43 +27,49 @@ export class CartService {
     return CartResponseMapper.toCartResponse(cart);
   }
 
-  async addItem(userId: string, dto: AddCartItemDto): Promise<CartResponseDto> {
-    const quantity = dto.quantity ?? 1;
-    const variantId = dto.variantId;
+  async addItem(
+    userId: string,
+    dto: AddCartItemRequestDto,
+  ): Promise<CartResponseDto> {
+    const { data } = dto;
+    const quantity = data.quantity ?? 1;
+    const variantId = data.variantId;
 
-    const product = await this.productRepository.findById(dto.productId);
+    const product = await this.productRepository.findById(data.productId);
     if (!product || product.status !== ProductStatus.ACTIVE) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException(this.translator.t('cart.productNotFound'));
     }
 
     const variant = await this.productVariantRepository.findById(variantId);
-    if (!variant || variant.productId !== dto.productId) {
-      throw new NotFoundException('Product variant not found');
+    if (!variant || variant.productId !== data.productId) {
+      throw new NotFoundException(this.translator.t('cart.variantNotFound'));
     }
     if (!variant.isActive) {
-      throw new BadRequestException('Product variant is not available');
+      throw new BadRequestException(
+        this.translator.t('cart.variantNotAvailable'),
+      );
     }
     if (variant.stock < quantity) {
-      throw new BadRequestException('Not enough stock');
+      throw new BadRequestException(this.translator.t('cart.notEnoughStock'));
     }
 
     const cart = await this.cartRepository.getOrCreateByUserId(userId);
     const existing = await this.cartRepository.findItemByCartProductVariant(
       cart.id,
-      dto.productId,
+      data.productId,
       variantId,
     );
 
     if (existing) {
       const nextQuantity = existing.quantity + quantity;
       if (existing.variant.stock < nextQuantity) {
-        throw new BadRequestException('Not enough stock');
+        throw new BadRequestException(this.translator.t('cart.notEnoughStock'));
       }
       await this.cartRepository.updateItemQuantity(existing.id, nextQuantity);
     } else {
       await this.cartRepository.createItem(
         cart.id,
-        dto.productId,
+        data.productId,
         variantId,
         quantity,
       );
@@ -77,28 +85,31 @@ export class CartService {
   async updateItem(
     userId: string,
     itemId: string,
-    dto: UpdateCartItemDto,
+    dto: UpdateCartItemRequestDto,
   ): Promise<CartResponseDto> {
+    const { data } = dto;
     const existing = await this.cartRepository.findItemByIdAndUser(
       itemId,
       userId,
     );
     if (!existing) {
-      throw new NotFoundException('Cart item not found');
+      throw new NotFoundException(this.translator.t('cart.itemNotFound'));
     }
 
     if (!existing.variant.isActive) {
-      throw new BadRequestException('Product variant is not available');
+      throw new BadRequestException(
+        this.translator.t('cart.variantNotAvailable'),
+      );
     }
-    if (existing.variant.stock < dto.quantity) {
-      throw new BadRequestException('Not enough stock');
+    if (existing.variant.stock < data.quantity) {
+      throw new BadRequestException(this.translator.t('cart.notEnoughStock'));
     }
 
-    await this.cartRepository.updateItemQuantity(itemId, dto.quantity);
+    await this.cartRepository.updateItemQuantity(itemId, data.quantity);
 
     const cart = await this.cartRepository.findByUserId(userId);
     if (!cart) {
-      throw new NotFoundException('Cart not found');
+      throw new NotFoundException(this.translator.t('cart.cartNotFound'));
     }
     return CartResponseMapper.toCartResponse(cart);
   }
@@ -109,14 +120,14 @@ export class CartService {
       userId,
     );
     if (!existing) {
-      throw new NotFoundException('Cart item not found');
+      throw new NotFoundException(this.translator.t('cart.itemNotFound'));
     }
 
     await this.cartRepository.deleteItem(itemId);
 
     const cart = await this.cartRepository.findByUserId(userId);
     if (!cart) {
-      throw new NotFoundException('Cart not found');
+      throw new NotFoundException(this.translator.t('cart.cartNotFound'));
     }
     return CartResponseMapper.toCartResponse(cart);
   }

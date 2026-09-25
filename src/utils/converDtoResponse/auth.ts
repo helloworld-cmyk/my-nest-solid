@@ -12,7 +12,7 @@ export class AuthResponseMapper {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      phoneNumber: user.phoneNumber,
+      phoneNumber: user.phoneNumber ?? '',
       role: user.role,
     };
   }

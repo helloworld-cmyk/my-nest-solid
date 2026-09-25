@@ -10,7 +10,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { PaginationQueryDto } from '../../../../dto/pagination.dto.js';
+import { PaginationQueryDto } from '../../../../common/dto/pagination.dto.js';
 import {
   ToBooleanQuery,
   ToNumberArray,

@@ -51,7 +51,7 @@ ls -la .husky/_             # must list: h, commit-msg, pre-commit
 - Feature modules live under `src/modules/`: `auth`, `profile`, `category`, `product`, `payment`, `address`. Each module has `*.controller.ts`, `*.service.ts`, `*.module.ts`, and `dto/request/` + `dto/response/`.
 - Repositories live in `src/repositories/` (one `*.repository.ts` per Prisma model, kebab-case). Services inject repositories; repositories inject the global `PrismaService` — never use `PrismaService` directly in services or controllers.
 - `PrismaModule` (`src/prisma/`) is `@Global()`. `PrismaService` extends `PrismaClient` with the `PrismaPg` adapter and connects/disconnects via lifecycle hooks.
-- Shared cross-module DTOs live in `src/dto/` (currently `PaginationQueryDto`, `PaginationMetaDto`); module-specific DTOs live in each module's `dto/`.
+- Shared cross-module DTOs live in `src/common/dto/` (currently `PaginationQueryDto`, `PaginationMetaDto`, `BaseRequestDto`); module-specific DTOs live in each module's `dto/`.
 - Mappers: `src/utils/converDtoResponse/` (note: typo "conver" in folder name — keep it) — static mapper classes (`ProductResponseMapper`) that convert repository rows into response DTOs.
 - Query coercion decorators: `src/utils/transform/` (`TrimToUndefined`, `ToBooleanQuery`, `ToNumberArray`, `ToStringArray`, `ToOptionalNumber`), re-exported from `utils/transform/index.js`.
 - Utils: `src/utils/class/hash.ts` (`HashUtils.sha256`, used e.g. for payment card tokens).
@@ -84,8 +84,11 @@ ls -la .husky/_             # must list: h, commit-msg, pre-commit
 
 ## DTOs
 
-- Request DTOs live in `dto/request/`, response DTOs in `dto/response/`; shared base DTOs in `src/dto/`.
-- Query DTOs that paginate extend `PaginationQueryDto` from `src/dto/pagination.dto.js`.
+- Request DTOs live in `dto/request/`, response DTOs in `dto/response/`; shared base DTOs in `src/common/dto/`.
+- Every `@Body()` endpoint takes an envelope `<X>RequestDto extends BaseRequestDto<XDto>` (`src/common/dto/base-request.dto.js`): body is `{ metadata?: RequestMetadataDto, data: XDto }`. The wrapper class lives next to the original DTO in the same file and must re-declare `data` with `@ValidateNested() @Type(() => XDto)` — TypeScript generics are erased at runtime, so without a concrete class the nested DTO's validators never run and `whitelist: true` strips the payload.
+- Controllers pass the whole envelope `dto` to the service; services destructure `const { data } = dto;` (add `metadata` only when a function actually uses it). Original DTOs, response shape, and repositories stay unchanged.
+- `RequestMetadataDto` currently has only `lang` (`en|vi`, optional), consumed by the i18n `BodyLanguageResolver` (`body.metadata.lang` with fallback to legacy `body.lang`). Add more metadata fields only when there is a real need.
+- Query DTOs that paginate extend `PaginationQueryDto` from `src/common/dto/pagination.dto.js`.
 - Request DTOs combine OpenAPI decorators + class-validator rules + custom transform decorators from `utils/transform/index.js` for query coercion; validated by the global `ValidationPipe` and never returned to clients.
 - Allowed enum values are exported as `const` arrays (e.g. `PRODUCT_LIST_SORTS`) and used with `@IsIn(...)` plus `typeof` for the field type.
 - Response DTOs use OpenAPI decorators to describe the response shape. Enum and date shapes are described via OpenAPI metadata.
@@ -98,7 +101,7 @@ ls -la .husky/_             # must list: h, commit-msg, pre-commit
 - Define reusable `select`/`include` fragments as module-level constants with `satisfies Prisma.<Model>Select` / `satisfies Prisma.<Model>Include`, and derive row types via `Prisma.<Model>GetPayload<{ include: typeof ... }>`.
 - Filter objects are plain interfaces (e.g. `ProductListFilter`); build `where` via a private `buildWhere` helper returning `Prisma.<Model>WhereInput`.
 - Select only the fields the caller needs and exclude sensitive or internal persistence fields at the query level, never by post-processing the result.
-- Paginated reads use `$transaction([findMany, count])` with `normalizePagination`-style helpers (floor page/limit, cap limit at 100, default 20); other list helpers clamp limits (e.g. `clampLimit`).
+- Paginated reads use `$transaction([findMany, count])` plus the shared helpers in `src/utils/pagination/index.js`: `normalizePagination` (floor page/limit, default page 1 / limit 20, cap limit at 100, returns `skip`), `clampLimit` for non-paginated list caps (default max 20), and `buildPaginationMeta` for response `pagination` blocks. Never re-implement these rules locally.
 - Search uses `contains` + `mode: 'insensitive'`; conditional filters are spread in only when defined.
 
 ## Auth
@@ -146,4 +149,20 @@ ls -la .husky/_             # must list: h, commit-msg, pre-commit
 - Copy `.env.example` to `.env`
 - Required: `DB_HOST` (PostgreSQL connection string), `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
 - Optional: `PORT`, `JWT_ACCESS_EXP`, `JWT_REFRESH_EXP`, `ENVIRONMENT` (`DEV`/`PROD`)
-- **NEVER read `.env`** — only read `.env.example` for variable reference
+- **NEVER read `.env`** — `.env.example` is the only env file an agent may read. Full rules: "Secrets & credentials" below.
+
+## Secrets & credentials
+
+- **Do not read credential/secret files on your own initiative.** Opening any file that holds a token, key, password, or connection string requires the user's explicit permission **for that file and that task**; a permission given once never carries over to the next request.
+- Treat as credentials — never `cat`, `head`, `tail`, `less`, `cp`, `grep`, `git show`, or otherwise open — `.env` and `.env.*` (except `.env.example`), `*.pem`, `*.key`, `*.p12`, `*.pfx`, `*.jks`, keystores, `serviceAccount*.json` / any file referenced by `GOOGLE_APPLICATION_CREDENTIALS` (e.g. Firebase Admin SDK JSON), `~/.aws/*`, `~/.ssh/*`, `~/.netrc`, `~/.docker/config.json`, `~/.npmrc` / `.npmrc` auth tokens, `.pgpass`, CI/CD secret files, and anything `.gitignore` excludes for being secret.
+- Read the example/template instead: `.env.example` is the **only** env file an agent may read. Other safe sources for variable names: `docker-compose.yml`, `README.md`, `prisma.config.ts`, and `ConfigService.get('<KEY>')` call sites under `src/`.
+- If the template is missing or outdated, **ask the user to create/update `<name>.example` with placeholder values** (e.g. `JWT_ACCESS_SECRET=changeme`) and read that — never open the real file "just to check".
+- If a real value is truly unavoidable (for example to debug a DB connection), name the variable and the reason in the request, then **wait for the user to paste it** — do not fetch it yourself.
+- Never write real secrets into source, tests, fixtures, seeds, comments, Swagger examples, logs, error messages, or commit messages. Use placeholders (`test-secret`, `changeme`, `********`) and env indirection (`ConfigService` / `process.env`) — no hardcoded secrets.
+- Never commit a secret file: verify `.gitignore` covers it before creating any file that holds a token.
+- If a secret appears to have leaked (already committed, printed to output/log, or seen unexpectedly), **stop and tell the user** — do not rotate keys, rewrite git history, or "clean up" silently.
+- When unsure whether something counts as a credential, treat it as one and ask first.
+
+## Planning
+
+- Khi lập kế hoạch, chỉ cần ngắn gọn: liệt kê file sẽ sửa/tạo + mục đích 1 dòng mỗi file, không viết plan dài dòng

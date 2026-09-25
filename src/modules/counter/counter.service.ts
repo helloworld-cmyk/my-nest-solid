@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WsException } from '@nestjs/websockets';
 import { Subscription, timer } from 'rxjs';
+import { resolveIntervalMs } from '../../utils/number/index.js';
 import { CounterStreamDto } from './dto/response/counter-stream.js';
 
 const DEFAULT_STEP = 1;
@@ -30,8 +31,10 @@ export class CounterService {
   private readonly streams = new Map<string, CounterStreamState>();
 
   constructor(private readonly configService: ConfigService) {
-    this.intervalMs = CounterService.resolveIntervalMs(
+    this.intervalMs = resolveIntervalMs(
       this.configService.get<string | number>(ENV_INTERVAL_MS),
+      DEFAULT_INTERVAL_MS,
+      MIN_INTERVAL_MS,
     );
   }
 
@@ -139,14 +142,5 @@ export class CounterService {
       intervalMs: this.intervalMs,
       streaming: state.streaming,
     };
-  }
-
-  private static resolveIntervalMs(raw: string | number | undefined): number {
-    const parsed = Number(raw);
-    if (!Number.isFinite(parsed) || parsed < MIN_INTERVAL_MS) {
-      return DEFAULT_INTERVAL_MS;
-    }
-
-    return Math.floor(parsed);
   }
 }

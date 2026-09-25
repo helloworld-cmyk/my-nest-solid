@@ -1,5 +1,3 @@
-//NOTE: chưa chuẩn hóa type của message của exception
-
 import {
   ArgumentsHost,
   Catch,
@@ -8,16 +6,19 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  constructor(private readonly translator: I18nTranslator) {}
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
 
     const response = ctx.getResponse<Response>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
+    let message = this.translator.t('common.internalError');
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();

@@ -3,6 +3,7 @@ import type {
   ReviewResponseDto,
   ReviewListResponseDto,
 } from '../../modules/review/dto/response/review.js';
+import { buildPaginationMeta } from '../pagination/index.js';
 
 export class ReviewResponseMapper {
   private constructor() {}
@@ -31,12 +32,7 @@ export class ReviewResponseMapper {
   ): ReviewListResponseDto {
     return {
       items: ReviewResponseMapper.toReviewItems(reviews),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
-      },
+      pagination: buildPaginationMeta(page, limit, total),
     };
   }
 }

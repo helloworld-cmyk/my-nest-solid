@@ -18,8 +18,8 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard.js';
 import { AddressService } from './address.service.js';
-import { CreateAddressDto } from './dto/request/create-address.js';
-import { UpdateAddressDto } from './dto/request/update-address.js';
+import { CreateAddressRequestDto } from './dto/request/create-address.js';
+import { UpdateAddressRequestDto } from './dto/request/update-address.js';
 import { AddressResponseDto } from './dto/response/address.js';
 
 @ApiTags('address')
@@ -60,7 +60,7 @@ export class AddressController {
   })
   createAddress(
     @Request() req: { user: { id: string } },
-    @Body() dto: CreateAddressDto,
+    @Body() dto: CreateAddressRequestDto,
   ) {
     return this.addressService.createAddress(req.user.id, dto);
   }
@@ -81,7 +81,7 @@ export class AddressController {
   updateAddress(
     @Request() req: { user: { id: string } },
     @Param('id') id: string,
-    @Body() dto: UpdateAddressDto,
+    @Body() dto: UpdateAddressRequestDto,
   ) {
     return this.addressService.updateAddress(req.user.id, id, dto);
   }

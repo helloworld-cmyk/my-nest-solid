@@ -2,6 +2,8 @@ import type {
   CartItemWithRelations,
   CartWithItems,
 } from '../../repositories/cart.repository.js';
+import { roundMoney } from '../money/index.js';
+import { resolveUnitPrice as resolveUnitPriceUtil } from '../price/index.js';
 import { ProductResponseMapper } from './product.js';
 import type {
   CartItemResponseDto,
@@ -10,20 +12,13 @@ import type {
   CartVariantDto,
 } from '../../modules/cart/dto/response/cart.js';
 
-function roundMoney(amount: number): number {
-  return Math.round(amount * 100) / 100;
-}
-
 export class CartResponseMapper {
   private constructor() {}
 
   static resolveUnitPrice(
     item: Pick<CartItemWithRelations, 'product' | 'variant'>,
   ): number {
-    if (item.variant?.price != null) {
-      return Number(item.variant.price);
-    }
-    return Number(item.product.price);
+    return resolveUnitPriceUtil(item.product, item.variant);
   }
 
   static toCartProduct(item: CartItemWithRelations): CartProductDto {

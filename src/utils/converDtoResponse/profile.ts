@@ -14,7 +14,7 @@ export class ProfileResponseMapper {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      phoneNumber: user.phoneNumber,
+      phoneNumber: user.phoneNumber ?? '',
       avatarPath: user.avatarPath,
       firebaseUid: user.firebaseUid,
       authProvider: user.authProvider,

@@ -1,0 +1,14 @@
+{
+  "idempotencyKeyUsed": "Idempotency key was already used",
+  "addressNotFound": "Address not found",
+  "paymentCardIdRequired": "paymentCardId is required when paymentMethod is CARD",
+  "paymentCardNotFound": "Payment card not found",
+  "cartEmpty": "Cart is empty",
+  "itemMissingVariant": "Cart item missing variant",
+  "variantNotAvailable": "Product variant is not available",
+  "notEnoughStock": "Not enough stock",
+  "couponNotFound": "Coupon not found",
+  "orderNotFoundAfterCreation": "Order not found after creation",
+  "orderNotFound": "Order not found",
+  "cannotCancel": "Order can no longer be cancelled"
+}

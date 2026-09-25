@@ -3,18 +3,26 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CardBrand } from '../../../prisma/generated/prisma/enums.js';
 import { Prisma } from '../../../prisma/generated/prisma/client.js';
-import { HashUtils } from '../../utils/class/hash.js';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 import { PaymentCardRepository } from '../../repositories/payment-card.repository.js';
+import { HashUtils } from '../../utils/crypto/index.js';
 import { PaymentCardResponseMapper } from '../../utils/converDtoResponse/payment-card.js';
-import { CreatePaymentCardDto } from './dto/request/create-payment-card.js';
-import { UpdatePaymentCardDto } from './dto/request/update-payment-card.js';
+import {
+  detectCardBrand,
+  normalizeExpiryYear,
+} from '../../utils/payment/index.js';
+import { normalizeCardHolder } from '../../utils/string/index.js';
+import { CreatePaymentCardRequestDto } from './dto/request/create-payment-card.js';
+import { UpdatePaymentCardRequestDto } from './dto/request/update-payment-card.js';
 import { PaymentCardResponseDto } from './dto/response/payment-card.js';
 
 @Injectable()
 export class PaymentService {
-  constructor(private readonly paymentCardRepository: PaymentCardRepository) {}
+  constructor(
+    private readonly paymentCardRepository: PaymentCardRepository,
+    private readonly translator: I18nTranslator,
+  ) {}
 
   async listCards(userId: string): Promise<PaymentCardResponseDto[]> {
     const cards =
@@ -24,31 +32,34 @@ export class PaymentService {
 
   async addCard(
     userId: string,
-    dto: CreatePaymentCardDto,
+    dto: CreatePaymentCardRequestDto,
   ): Promise<PaymentCardResponseDto> {
-    const cardToken = HashUtils.sha256(dto.cardNumber);
+    const { data } = dto;
+    const cardToken = HashUtils.sha256(data.cardNumber);
 
     const existing = await this.paymentCardRepository.findActiveByTokenForUser(
       cardToken,
       userId,
     );
     if (existing) {
-      throw new ConflictException('Card already exists');
+      throw new ConflictException(
+        this.translator.t('payment.cardAlreadyExists'),
+      );
     }
 
-    if (dto.isDefault) {
+    if (data.isDefault) {
       await this.paymentCardRepository.unsetDefaultForUser(userId);
     }
 
     const card = await this.paymentCardRepository.create({
       user: { connect: { id: userId } },
       cardToken,
-      brand: this.detectBrand(dto.cardNumber),
-      cardHolder: dto.cardHolder.trim().toUpperCase(),
-      last4: dto.cardNumber.slice(-4),
-      expiryMonth: dto.expiryMonth,
-      expiryYear: this.normalizeExpiryYear(dto.expiryYear),
-      isDefault: dto.isDefault ?? false,
+      brand: detectCardBrand(data.cardNumber),
+      cardHolder: normalizeCardHolder(data.cardHolder),
+      last4: data.cardNumber.slice(-4),
+      expiryMonth: data.expiryMonth,
+      expiryYear: normalizeExpiryYear(data.expiryYear),
+      isDefault: data.isDefault ?? false,
     });
     return PaymentCardResponseMapper.toPaymentCardResponse(card);
   }
@@ -56,54 +67,57 @@ export class PaymentService {
   async updateCard(
     userId: string,
     cardId: string,
-    dto: UpdatePaymentCardDto,
+    dto: UpdatePaymentCardRequestDto,
   ): Promise<PaymentCardResponseDto> {
+    const { data } = dto;
     const existingCard = await this.paymentCardRepository.findActiveByIdAndUser(
       cardId,
       userId,
     );
     if (!existingCard) {
-      throw new NotFoundException('Payment card not found');
+      throw new NotFoundException(this.translator.t('payment.cardNotFound'));
     }
 
-    if (dto.cardNumber) {
-      const cardToken = HashUtils.sha256(dto.cardNumber);
+    if (data.cardNumber) {
+      const cardToken = HashUtils.sha256(data.cardNumber);
       const existing =
         await this.paymentCardRepository.findActiveByTokenForUser(
           cardToken,
           userId,
         );
       if (existing && existing.id !== cardId) {
-        throw new ConflictException('Card already exists');
+        throw new ConflictException(
+          this.translator.t('payment.cardAlreadyExists'),
+        );
       }
     }
 
-    if (dto.isDefault) {
+    if (data.isDefault) {
       await this.paymentCardRepository.unsetDefaultForUser(userId);
     }
 
     const updateData: Prisma.PaymentCardUpdateInput = {};
 
-    if (dto.cardNumber) {
-      updateData.cardToken = HashUtils.sha256(dto.cardNumber);
-      updateData.brand = this.detectBrand(dto.cardNumber);
-      updateData.last4 = dto.cardNumber.slice(-4);
+    if (data.cardNumber) {
+      updateData.cardToken = HashUtils.sha256(data.cardNumber);
+      updateData.brand = detectCardBrand(data.cardNumber);
+      updateData.last4 = data.cardNumber.slice(-4);
     }
 
-    if (dto.cardHolder) {
-      updateData.cardHolder = dto.cardHolder.trim().toUpperCase();
+    if (data.cardHolder) {
+      updateData.cardHolder = normalizeCardHolder(data.cardHolder);
     }
 
-    if (dto.expiryMonth !== undefined) {
-      updateData.expiryMonth = dto.expiryMonth;
+    if (data.expiryMonth !== undefined) {
+      updateData.expiryMonth = data.expiryMonth;
     }
 
-    if (dto.expiryYear !== undefined) {
-      updateData.expiryYear = this.normalizeExpiryYear(dto.expiryYear);
+    if (data.expiryYear !== undefined) {
+      updateData.expiryYear = normalizeExpiryYear(data.expiryYear);
     }
 
-    if (dto.isDefault !== undefined) {
-      updateData.isDefault = dto.isDefault;
+    if (data.isDefault !== undefined) {
+      updateData.isDefault = data.isDefault;
     }
 
     const card = await this.paymentCardRepository.update(cardId, updateData);
@@ -119,7 +133,7 @@ export class PaymentService {
       userId,
     );
     if (!existingCard) {
-      throw new NotFoundException('Payment card not found');
+      throw new NotFoundException(this.translator.t('payment.cardNotFound'));
     }
 
     const deleted = await this.paymentCardRepository.delete(cardId);
@@ -144,7 +158,7 @@ export class PaymentService {
       userId,
     );
     if (!existingCard) {
-      throw new NotFoundException('Payment card not found');
+      throw new NotFoundException(this.translator.t('payment.cardNotFound'));
     }
 
     await this.paymentCardRepository.unsetDefaultForUser(userId);
@@ -152,25 +166,5 @@ export class PaymentService {
       isDefault: true,
     });
     return PaymentCardResponseMapper.toPaymentCardResponse(card);
-  }
-
-  private normalizeExpiryYear(year: number): number {
-    return year < 100 ? year + 2000 : year;
-  }
-
-  private detectBrand(cardNumber: string): CardBrand {
-    if (cardNumber.startsWith('4')) {
-      return CardBrand.VISA;
-    }
-    if (/^5[1-5]/.test(cardNumber)) {
-      return CardBrand.MASTERCARD;
-    }
-    if (cardNumber.startsWith('35')) {
-      return CardBrand.JCB;
-    }
-    if (/^3[47]/.test(cardNumber)) {
-      return CardBrand.AMEX;
-    }
-    return CardBrand.UNKNOWN;
   }
 }

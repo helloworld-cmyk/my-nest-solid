@@ -1,0 +1,9 @@
+{
+  "productNotFound": "Product not found",
+  "variantNotFound": "Product variant not found",
+  "variantNotAvailable": "Product variant is not available",
+  "notEnoughStock": "Not enough stock",
+  "itemNotFound": "Cart item not found",
+  "cartNotFound": "Cart not found",
+  "itemMissingVariant": "Cart item missing variant"
+}

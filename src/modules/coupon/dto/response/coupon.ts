@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CouponType } from '../../../../../prisma/generated/prisma/enums.js';
-import { PaginationMetaDto } from '../../../../dto/pagination.dto.js';
+import { PaginationMetaDto } from '../../../../common/dto/pagination.dto.js';
 
 export const COUPON_TYPES = [CouponType.PERCENT, CouponType.FIXED] as const;
 

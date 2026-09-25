@@ -6,7 +6,9 @@ import {
   IsString,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { BaseRequestDto } from '../../../../common/dto/base-request.dto.js';
 
 export class ValidateCouponDto {
   @ApiProperty({
@@ -27,4 +29,11 @@ export class ValidateCouponDto {
   @IsNumber()
   @Min(0)
   subtotal!: number;
+}
+
+export class ValidateCouponRequestDto extends BaseRequestDto<ValidateCouponDto> {
+  @ApiProperty({ type: () => ValidateCouponDto })
+  @ValidateNested()
+  @Type(() => ValidateCouponDto)
+  declare data: ValidateCouponDto;
 }

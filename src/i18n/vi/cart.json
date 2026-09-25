@@ -1,0 +1,9 @@
+{
+  "productNotFound": "Không tìm thấy sản phẩm",
+  "variantNotFound": "Không tìm thấy phiên bản sản phẩm",
+  "variantNotAvailable": "Phiên bản sản phẩm hiện không khả dụng",
+  "notEnoughStock": "Không đủ hàng trong kho",
+  "itemNotFound": "Không tìm thấy sản phẩm trong giỏ",
+  "cartNotFound": "Không tìm thấy giỏ hàng",
+  "itemMissingVariant": "Sản phẩm trong giỏ thiếu phiên bản"
+}

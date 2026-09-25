@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { I18nTranslator } from '../../../i18n/i18n.translator.js';
 import { UserRepository } from '../../../repositories/user.repository.js';
 import { Role } from '../../../../prisma/generated/prisma/enums.js';
 import { AuthenticatedUser, JwtPayload } from './jwt.strategy.js';
@@ -15,6 +16,7 @@ export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
   constructor(
     private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
+    private readonly translator: I18nTranslator,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,17 +27,21 @@ export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     if (!payload.sub) {
-      throw new UnauthorizedException('Invalid token payload');
+      throw new UnauthorizedException(
+        this.translator.t('auth.invalidTokenPayload'),
+      );
     }
 
     const user = await this.userRepository.findById(payload.sub);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(this.translator.t('auth.userNotFound'));
     }
 
     const userRole = user.role ?? Role.USER;
     if (userRole !== Role.ADMIN) {
-      throw new ForbiddenException('Admin access required');
+      throw new ForbiddenException(
+        this.translator.t('auth.adminAccessRequired'),
+      );
     }
 
     return {

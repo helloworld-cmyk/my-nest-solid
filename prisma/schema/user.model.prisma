@@ -1,8 +1,8 @@
 enum AuthProvider {
   EMAIL_PASSWORD
   GOOGLE
-  APPLE
   FACEBOOK
+  GITHUB
 }
 
 enum Role {
@@ -13,12 +13,12 @@ enum Role {
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
-  passwordHash String
+  passwordHash String?
   firstName    String
   lastName     String
-  phoneNumber  String
+  phoneNumber  String?
   avatarPath   String?
-  firebaseUid  String?
+  firebaseUid  String? @unique
   authProvider AuthProvider
   role         Role         @default(USER)
   createdAt    DateTime  @default(now())
@@ -31,5 +31,5 @@ model User {
   carts        Cart[]         
   wishlist     WishlistItem[]  
   orders       Order[]        
-  coupons      CouponRedemption[] 
+  coupons      CouponRedemption[]
 }

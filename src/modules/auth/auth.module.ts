@@ -7,9 +7,11 @@ import { AuthService } from './auth.service';
 import { UserRepository } from '../../repositories/user.repository.js';
 import { JwtStrategy } from './strategy/jwt.strategy.js';
 import { JwtAdminStrategy } from './strategy/jwt-admin.strategy.js';
+import { FirebaseModule } from '../../3rdparty/firebase/firebase.module.js';
 
 @Module({
   imports: [
+    FirebaseModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

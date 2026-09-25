@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, NotEquals } from 'class-validator';
-import { parseWsPayload } from './parse-ws-payload.js';
+import { parseWsPayload } from '../../../../utils/validation/parse-ws-payload.js';
 
 export class SetIncrementDto {
   @ApiProperty({
@@ -20,8 +20,8 @@ export class SetIncrementDto {
       'Optional value to restart the sequence from: the next number emitted is this value, then this value + step.',
   })
   @Type(() => Number)
-  @IsInt()
   @IsOptional()
+  @IsInt()
   startFrom?: number;
 
   static parse(payload: unknown): SetIncrementDto {

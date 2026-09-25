@@ -20,8 +20,8 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard.js';
 import { CartService } from './cart.service.js';
-import { AddCartItemDto } from './dto/request/add-cart-item.js';
-import { UpdateCartItemDto } from './dto/request/update-cart-item.js';
+import { AddCartItemRequestDto } from './dto/request/add-cart-item.js';
+import { UpdateCartItemRequestDto } from './dto/request/update-cart-item.js';
 import { CartResponseDto } from './dto/response/cart.js';
 
 @ApiTags('cart')
@@ -67,7 +67,7 @@ export class CartController {
   })
   addItem(
     @Request() req: { user: { id: string } },
-    @Body() dto: AddCartItemDto,
+    @Body() dto: AddCartItemRequestDto,
   ) {
     return this.cartService.addItem(req.user.id, dto);
   }
@@ -95,7 +95,7 @@ export class CartController {
   updateItem(
     @Request() req: { user: { id: string } },
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateCartItemDto,
+    @Body() dto: UpdateCartItemRequestDto,
   ) {
     return this.cartService.updateItem(req.user.id, id, dto);
   }

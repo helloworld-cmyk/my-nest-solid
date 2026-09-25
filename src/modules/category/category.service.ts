@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 import { CategoryRepository } from '../../repositories/category.repository.js';
 import { CategoryResponseMapper } from '../../utils/converDtoResponse/category.js';
 import { CreateCategoryDto } from './dto/request/create-category.js';
@@ -9,7 +10,10 @@ import {
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly categoryRepository: CategoryRepository) {}
+  constructor(
+    private readonly categoryRepository: CategoryRepository,
+    private readonly translator: I18nTranslator,
+  ) {}
 
   async getCategories(): Promise<CategoryListItemDto[]> {
     const categories = await this.categoryRepository.findAllActive();
@@ -20,7 +24,7 @@ export class CategoryService {
     const existing = await this.categoryRepository.findBySlug(dto.slug);
     if (existing) {
       throw new ConflictException(
-        `Category with slug '${dto.slug}' already exists`,
+        this.translator.t('category.slugAlreadyExists', { slug: dto.slug }),
       );
     }
 

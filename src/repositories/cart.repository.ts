@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../prisma/generated/prisma/client.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { PrismaService } from '../3rdparty/prisma/prisma.service.js';
 
 const cartItemRelationsInclude = {
   product: {

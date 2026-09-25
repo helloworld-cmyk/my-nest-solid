@@ -9,7 +9,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { PaginationMetaDto } from '../../../../dto/pagination.dto.js';
+import { PaginationMetaDto } from '../../../../common/dto/pagination.dto.js';
 
 export class ProductItemDto {
   @ApiProperty({ example: 1 })

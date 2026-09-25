@@ -28,6 +28,11 @@ import type {
   SearchProductItemDto,
   SearchProductsResponseDto,
 } from '../../modules/product/dto/response/search-response.js';
+import { buildPaginationMeta } from '../pagination/index.js';
+import {
+  pickCoverImage as pickCoverImageUtil,
+  type CoverImageInput,
+} from '../media/index.js';
 
 export type CategoryListItem = Awaited<
   ReturnType<CategoryRepository['findAllActive']>
@@ -39,20 +44,13 @@ export type PriceBounds = Awaited<
   ReturnType<ProductRepository['getPriceBounds']>
 >;
 
-interface CoverImageInput {
-  imagePath: string;
-  type: string;
-}
+export type { CoverImageInput };
 
 export class ProductResponseMapper {
   private constructor() {}
 
   static pickCoverImage(images: readonly CoverImageInput[]): string | null {
-    if (images.length === 0) {
-      return null;
-    }
-    const gallery = images.find((image) => image.type === 'GALLERY');
-    return (gallery ?? images[0]).imagePath;
+    return pickCoverImageUtil(images);
   }
 
   static toProductItem(item: ProductListItem): ProductItemDto {
@@ -82,12 +80,7 @@ export class ProductResponseMapper {
   ): ProductListResponseDto {
     return {
       items: ProductResponseMapper.toProductItems(items),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
-      },
+      pagination: buildPaginationMeta(page, limit, total),
     };
   }
 

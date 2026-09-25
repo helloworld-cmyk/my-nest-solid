@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
@@ -7,7 +8,9 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { BaseRequestDto } from '../../../../common/dto/base-request.dto.js';
 
 export class CreateAddressDto {
   @ApiProperty({
@@ -46,4 +49,11 @@ export class CreateAddressDto {
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;
+}
+
+export class CreateAddressRequestDto extends BaseRequestDto<CreateAddressDto> {
+  @ApiProperty({ type: () => CreateAddressDto })
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  declare data: CreateAddressDto;
 }

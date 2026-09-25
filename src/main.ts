@@ -2,9 +2,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './filters/http-exception';
-import { PrismaExceptionFilter } from './filters/prisma-exception';
-import { ResponseInterceptor } from './interceptor/interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -18,12 +15,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-  //filters
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalFilters(new PrismaExceptionFilter());
-  //interceptors
-  app.useGlobalInterceptors(new ResponseInterceptor());
 
   //swagger
   const swaggerConfig = new DocumentBuilder()

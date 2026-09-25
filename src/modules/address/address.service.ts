@@ -1,14 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../../../prisma/generated/prisma/client.js';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 import { UserAddressRepository } from '../../repositories/user-address.repository.js';
 import { AddressResponseMapper } from '../../utils/converDtoResponse/address.js';
-import { CreateAddressDto } from './dto/request/create-address.js';
-import { UpdateAddressDto } from './dto/request/update-address.js';
+import { CreateAddressRequestDto } from './dto/request/create-address.js';
+import { UpdateAddressRequestDto } from './dto/request/update-address.js';
 import { AddressResponseDto } from './dto/response/address.js';
 
 @Injectable()
 export class AddressService {
-  constructor(private readonly userAddressRepository: UserAddressRepository) {}
+  constructor(
+    private readonly userAddressRepository: UserAddressRepository,
+    private readonly translator: I18nTranslator,
+  ) {}
 
   async listAddresses(userId: string): Promise<AddressResponseDto[]> {
     const addresses = await this.userAddressRepository.findAllByUserId(userId);
@@ -17,19 +21,20 @@ export class AddressService {
 
   async createAddress(
     userId: string,
-    dto: CreateAddressDto,
+    dto: CreateAddressRequestDto,
   ): Promise<AddressResponseDto> {
-    if (dto.isDefault) {
+    const { data } = dto;
+    if (data.isDefault) {
       await this.userAddressRepository.unsetDefaultForUser(userId);
     }
 
     const address = await this.userAddressRepository.create({
       user: { connect: { id: userId } },
-      name: dto.name,
-      address: dto.address,
-      email: dto.email,
-      phone: dto.phone,
-      isDefault: dto.isDefault ?? false,
+      name: data.name,
+      address: data.address,
+      email: data.email,
+      phone: data.phone,
+      isDefault: data.isDefault ?? false,
     });
     return AddressResponseMapper.toAddressResponse(address);
   }
@@ -37,27 +42,28 @@ export class AddressService {
   async updateAddress(
     userId: string,
     addressId: string,
-    dto: UpdateAddressDto,
+    dto: UpdateAddressRequestDto,
   ): Promise<AddressResponseDto> {
+    const { data } = dto;
     const existing = await this.userAddressRepository.findByIdAndUser(
       addressId,
       userId,
     );
     if (!existing) {
-      throw new NotFoundException('Address not found');
+      throw new NotFoundException(this.translator.t('address.notFound'));
     }
 
-    if (dto.isDefault) {
+    if (data.isDefault) {
       await this.userAddressRepository.unsetDefaultForUser(userId);
     }
 
     const updateData: Prisma.UserAddressUpdateInput = {};
 
-    if (dto.name !== undefined) updateData.name = dto.name;
-    if (dto.address !== undefined) updateData.address = dto.address;
-    if (dto.email !== undefined) updateData.email = dto.email;
-    if (dto.phone !== undefined) updateData.phone = dto.phone;
-    if (dto.isDefault !== undefined) updateData.isDefault = dto.isDefault;
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.address !== undefined) updateData.address = data.address;
+    if (data.email !== undefined) updateData.email = data.email;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.isDefault !== undefined) updateData.isDefault = data.isDefault;
 
     const updated = await this.userAddressRepository.update(
       addressId,
@@ -75,7 +81,7 @@ export class AddressService {
       userId,
     );
     if (!existing) {
-      throw new NotFoundException('Address not found');
+      throw new NotFoundException(this.translator.t('address.notFound'));
     }
 
     const deleted = await this.userAddressRepository.delete(addressId);
@@ -99,7 +105,7 @@ export class AddressService {
       userId,
     );
     if (!existing) {
-      throw new NotFoundException('Address not found');
+      throw new NotFoundException(this.translator.t('address.notFound'));
     }
 
     await this.userAddressRepository.unsetDefaultForUser(userId);

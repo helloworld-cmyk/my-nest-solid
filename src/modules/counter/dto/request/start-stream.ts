@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
-import { parseWsPayload } from './parse-ws-payload.js';
+import { parseWsPayload } from '../../../../utils/validation/parse-ws-payload.js';
 
 export class StartStreamDto {
   @ApiPropertyOptional({
@@ -10,8 +10,8 @@ export class StartStreamDto {
       'Value that the restarted sequence starts from. When omitted, the stream resumes at its current position.',
   })
   @Type(() => Number)
-  @IsInt()
   @IsOptional()
+  @IsInt()
   startFrom?: number;
 
   static parse(payload: unknown): StartStreamDto {

@@ -3,10 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 import { CouponRepository } from '../../repositories/coupon.repository.js';
 import { CouponResponseMapper } from '../../utils/converDtoResponse/coupon.js';
+import { filterUsableCoupons } from '../../utils/coupon/index.js';
+import { normalizePagination } from '../../utils/pagination/index.js';
+import { normalizeCouponCode } from '../../utils/string/index.js';
 import { ListCouponsQueryDto } from './dto/request/list-coupons.query.js';
-import { ValidateCouponDto } from './dto/request/validate-coupon.js';
+import { ValidateCouponRequestDto } from './dto/request/validate-coupon.js';
 import {
   CouponListResponseDto,
   ValidateCouponResponseDto,
@@ -14,51 +18,37 @@ import {
 
 @Injectable()
 export class CouponService {
-  constructor(private readonly couponRepository: CouponRepository) {}
+  constructor(
+    private readonly couponRepository: CouponRepository,
+    private readonly translator: I18nTranslator,
+  ) {}
 
   async listCoupons(
     query: ListCouponsQueryDto,
   ): Promise<CouponListResponseDto> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const { page, limit, skip } = normalizePagination(query.page, query.limit);
 
     const coupons = await this.couponRepository.findActiveCoupons();
-    const usable = coupons.filter(
-      (coupon) =>
-        coupon.usageLimit == null || coupon.usedCount < coupon.usageLimit,
-    );
+    const usable = filterUsableCoupons(coupons);
 
     const total = usable.length;
-    const items = usable.slice((page - 1) * limit, page * limit);
+    const items = usable.slice(skip, skip + limit);
     return CouponResponseMapper.toCouponListResponse(items, page, limit, total);
   }
 
   async validateCoupon(
     userId: string,
-    dto: ValidateCouponDto,
+    dto: ValidateCouponRequestDto,
   ): Promise<ValidateCouponResponseDto> {
-    const code = dto.code.trim().toUpperCase();
+    const { data } = dto;
+    const code = normalizeCouponCode(data.code);
     if (!code) {
-      throw new BadRequestException('Coupon code is required');
+      throw new BadRequestException(this.translator.t('coupon.codeRequired'));
     }
 
     const coupon = await this.couponRepository.findByCodeInsensitive(code);
     if (!coupon) {
-      throw new NotFoundException('Coupon not found');
-    }
-    if (!coupon.isActive) {
-      throw new BadRequestException('Coupon is not active');
-    }
-
-    const now = new Date();
-    if (coupon.startsAt > now) {
-      throw new BadRequestException('Coupon is not yet valid');
-    }
-    if (coupon.endsAt && coupon.endsAt < now) {
-      throw new BadRequestException('Coupon has expired');
-    }
-    if (coupon.usageLimit != null && coupon.usedCount >= coupon.usageLimit) {
-      throw new BadRequestException('Coupon usage limit reached');
+      throw new NotFoundException(this.translator.t('coupon.notFound'));
     }
 
     const usedByUser =
@@ -66,21 +56,40 @@ export class CouponService {
         userId,
         coupon.id,
       );
-    if (usedByUser >= coupon.perUserLimit) {
-      throw new BadRequestException('You have already used this coupon');
+    const now = new Date();
+    if (!coupon.isActive) {
+      throw new BadRequestException(this.translator.t('coupon.notActive'));
     }
-
-    const minimumOrderAmount = Number(coupon.minimumOrderAmount);
-    if (dto.subtotal < minimumOrderAmount) {
+    if (coupon.startsAt > now) {
+      throw new BadRequestException(this.translator.t('coupon.notYetValid'));
+    }
+    if (coupon.endsAt && coupon.endsAt < now) {
+      throw new BadRequestException(this.translator.t('coupon.expired'));
+    }
+    if (coupon.usageLimit != null && coupon.usedCount >= coupon.usageLimit) {
       throw new BadRequestException(
-        `Minimum order amount of ${minimumOrderAmount} not met`,
+        this.translator.t('coupon.usageLimitReached'),
+      );
+    }
+    if (usedByUser >= coupon.perUserLimit) {
+      throw new BadRequestException(this.translator.t('coupon.alreadyUsed'));
+    }
+    const minimumOrderAmount = Number(coupon.minimumOrderAmount);
+    if (data.subtotal < minimumOrderAmount) {
+      throw new BadRequestException(
+        this.translator.t('coupon.minimumOrderNotMet', {
+          amount: minimumOrderAmount,
+        }),
       );
     }
 
-    const discount = CouponResponseMapper.computeDiscount(coupon, dto.subtotal);
+    const discount = CouponResponseMapper.computeDiscount(
+      coupon,
+      data.subtotal,
+    );
     return CouponResponseMapper.toValidateResponse(
       coupon,
-      dto.subtotal,
+      data.subtotal,
       discount,
     );
   }

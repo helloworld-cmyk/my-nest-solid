@@ -1,0 +1,13 @@
+{
+  "success": "Success",
+  "internalError": "Internal server error",
+  "resourceAlreadyExists": "Resource already exists",
+  "resourceNotFound": "Resource not found",
+  "relatedNotFound": "Related resource does not exist",
+  "valueTooLong": "Value is too long",
+  "invalidValue": "Invalid value",
+  "requiredNotNull": "Required field cannot be null",
+  "requiredMissing": "Required value is missing",
+  "relationViolation": "Relation constraint violation",
+  "databaseError": "Database error"
+}

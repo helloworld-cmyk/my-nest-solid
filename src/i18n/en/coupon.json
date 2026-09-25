@@ -1,0 +1,10 @@
+{
+  "codeRequired": "Coupon code is required",
+  "notFound": "Coupon not found",
+  "notActive": "Coupon is not active",
+  "notYetValid": "Coupon is not yet valid",
+  "expired": "Coupon has expired",
+  "usageLimitReached": "Coupon usage limit reached",
+  "alreadyUsed": "You have already used this coupon",
+  "minimumOrderNotMet": "Minimum order amount of {amount} not met"
+}

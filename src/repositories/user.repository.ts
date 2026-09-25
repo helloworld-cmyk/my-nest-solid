@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../prisma/generated/prisma/client.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { PrismaService } from '../3rdparty/prisma/prisma.service.js';
 
 @Injectable()
 export class UserRepository {
@@ -15,6 +15,12 @@ export class UserRepository {
   findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
+    });
+  }
+
+  findByFirebaseUid(firebaseUid: string) {
+    return this.prisma.user.findUnique({
+      where: { firebaseUid },
     });
   }
 
@@ -54,6 +60,26 @@ export class UserRepository {
         lastName: true,
         phoneNumber: true,
         role: true,
+      } satisfies Prisma.UserSelect,
+    });
+  }
+
+  updateFirebaseLink(
+    id: string,
+    data: { firebaseUid: string; avatarPath?: string | null },
+  ) {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        role: true,
+        firebaseUid: true,
+        authProvider: true,
       } satisfies Prisma.UserSelect,
     });
   }

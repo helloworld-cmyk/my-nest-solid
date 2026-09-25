@@ -1,0 +1,5 @@
+{
+  "notFound": "Không tìm thấy sản phẩm",
+  "slugNotFound": "Không tìm thấy sản phẩm với slug '{slug}'",
+  "keywordRequired": "Thiếu từ khóa tìm kiếm \"keyword\""
+}

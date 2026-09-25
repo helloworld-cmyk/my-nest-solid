@@ -19,7 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard';
 import { WishlistService } from './wishlist.service.js';
-import { AddWishlistDto } from './dto/request/add-wishlist.js';
+import { AddWishlistRequestDto } from './dto/request/add-wishlist.js';
 import {
   WishlistItemResponseDto,
   WishlistListResponseDto,
@@ -68,7 +68,7 @@ export class WishlistController {
   })
   addToWishlist(
     @Request() req: { user: { id: string } },
-    @Body() dto: AddWishlistDto,
+    @Body() dto: AddWishlistRequestDto,
   ) {
     return this.wishlistService.addToWishlist(req.user.id, dto);
   }

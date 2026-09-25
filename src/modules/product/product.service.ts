@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ProductStatus } from '../../../prisma/generated/prisma/enums.js';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 import { CategoryRepository } from '../../repositories/category.repository.js';
 import { ProductRepository } from '../../repositories/product.repository.js';
 import { ProductReviewRepository } from '../../repositories/product-review.repository.js';
@@ -30,6 +31,7 @@ export class ProductService {
     private readonly categoryRepository: CategoryRepository,
     private readonly productReviewRepository: ProductReviewRepository,
     private readonly productVariantRepository: ProductVariantRepository,
+    private readonly translator: I18nTranslator,
   ) {}
 
   async listProducts(
@@ -75,7 +77,9 @@ export class ProductService {
   ): Promise<SearchProductsResponseDto> {
     const keyword = query.keyword;
     if (!keyword) {
-      throw new BadRequestException('Query "keyword" is required');
+      throw new BadRequestException(
+        this.translator.t('product.keywordRequired'),
+      );
     }
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
@@ -109,7 +113,9 @@ export class ProductService {
   async getProductDetail(slug: string): Promise<ProductDetailDto> {
     const product = await this.productRepository.findBySlug(slug);
     if (!product || product.status !== ProductStatus.ACTIVE) {
-      throw new NotFoundException(`Product with slug '${slug}' not found`);
+      throw new NotFoundException(
+        this.translator.t('product.slugNotFound', { slug }),
+      );
     }
 
     const [related, latestReviews] = await Promise.all([
@@ -131,7 +137,9 @@ export class ProductService {
   async getRelatedProducts(slug: string): Promise<RelatedProductDto[]> {
     const product = await this.productRepository.findBySlug(slug);
     if (!product || product.status !== ProductStatus.ACTIVE) {
-      throw new NotFoundException(`Product with slug '${slug}' not found`);
+      throw new NotFoundException(
+        this.translator.t('product.slugNotFound', { slug }),
+      );
     }
 
     const related = await this.productRepository.findRelated(

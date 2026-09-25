@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../prisma/generated/prisma/client.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { PrismaService } from '../3rdparty/prisma/prisma.service.js';
+import {
+  clampLimit,
+  DEFAULT_PAGE,
+  normalizePagination,
+} from '../utils/pagination/index.js';
 
 const reviewWithUserInclude = {
   user: {
@@ -17,18 +22,25 @@ export type ReviewWithUser = Prisma.ProductReviewGetPayload<{
   include: typeof reviewWithUserInclude;
 }>;
 
+const REVIEW_DEFAULT_LIMIT = 10;
+
 @Injectable()
 export class ProductReviewRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findByProductId(productId: number, page = 1, limit = 10) {
-    const safePage = page > 0 ? Math.floor(page) : 1;
-    const safeLimit = Math.min(Math.max(Math.floor(limit) || 10, 1), 100);
+  findByProductId(
+    productId: number,
+    page = DEFAULT_PAGE,
+    limit = REVIEW_DEFAULT_LIMIT,
+  ) {
+    const { limit: takeLimit, skip } = normalizePagination(page, limit, {
+      defaultLimit: REVIEW_DEFAULT_LIMIT,
+    });
     return this.prisma.productReview.findMany({
       where: { productId },
       orderBy: { createdAt: 'desc' },
-      skip: (safePage - 1) * safeLimit,
-      take: safeLimit,
+      skip,
+      take: takeLimit,
       include: {
         user: {
           select: {
@@ -50,7 +62,7 @@ export class ProductReviewRepository {
     return this.prisma.productReview.findMany({
       where: { productId },
       orderBy: { createdAt: 'desc' },
-      take: Math.min(Math.max(limit, 1), 20),
+      take: clampLimit(limit),
       include: {
         user: {
           select: {

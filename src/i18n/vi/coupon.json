@@ -1,0 +1,10 @@
+{
+  "codeRequired": "Vui lòng nhập mã giảm giá",
+  "notFound": "Không tìm thấy mã giảm giá",
+  "notActive": "Mã giảm giá đang không hoạt động",
+  "notYetValid": "Mã giảm giá chưa đến thời gian sử dụng",
+  "expired": "Mã giảm giá đã hết hạn",
+  "usageLimitReached": "Mã giảm giá đã hết lượt sử dụng",
+  "alreadyUsed": "Bạn đã sử dụng mã giảm giá này rồi",
+  "minimumOrderNotMet": "Đơn hàng chưa đạt giá trị tối thiểu {amount}"
+}

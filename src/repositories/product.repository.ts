@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ProductStatus } from '../../prisma/generated/prisma/enums.js';
 import { Prisma } from '../../prisma/generated/prisma/client.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { PrismaService } from '../3rdparty/prisma/prisma.service.js';
+import { clampLimit, normalizePagination } from '../utils/pagination/index.js';
 
 export type ProductListSort =
   'newest' | 'price_asc' | 'price_desc' | 'popular' | 'best_selling' | 'rating';
@@ -41,16 +42,6 @@ const productDetailInclude = {
 export type ProductDetail = Prisma.ProductGetPayload<{
   include: typeof productDetailInclude;
 }>;
-
-function normalizePagination(page?: number, limit?: number) {
-  const safePage = page && page > 0 ? Math.floor(page) : 1;
-  const safeLimit = limit && limit > 0 ? Math.min(Math.floor(limit), 100) : 20;
-  return { page: safePage, limit: safeLimit, skip: (safePage - 1) * safeLimit };
-}
-
-function clampLimit(limit: number) {
-  return Math.min(Math.max(Math.floor(limit), 1), 20);
-}
 
 @Injectable()
 export class ProductRepository {

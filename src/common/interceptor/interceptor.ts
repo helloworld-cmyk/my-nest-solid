@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { I18nTranslator } from '../../i18n/i18n.translator.js';
 
 export interface BaseResponse<T> {
   code: number;
@@ -18,6 +19,8 @@ export class ResponseInterceptor<T> implements NestInterceptor<
   T,
   BaseResponse<T>
 > {
+  constructor(private readonly translator: I18nTranslator) {}
+
   intercept(
     context: ExecutionContext,
     next: CallHandler<T>,
@@ -26,7 +29,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<
       map((data) => ({
         code: 200,
         data,
-        message: 'Success',
+        message: this.translator.t('common.success'),
       })),
     );
   }
