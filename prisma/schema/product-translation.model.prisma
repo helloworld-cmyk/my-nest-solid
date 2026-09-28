@@ -1,0 +1,15 @@
+model ProductTranslation {
+  productId           Int
+  languageCode        String  @db.VarChar(10)
+  name                String
+  slug                String
+  description         String  @db.Text
+  detailedDescription String? @db.Text
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageCode], references: [code], onDelete: Restrict)
+
+  @@id([productId, languageCode])
+  @@unique([languageCode, slug])
+  @@index([languageCode, name])
+}

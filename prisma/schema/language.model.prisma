@@ -1,0 +1,12 @@
+model Language {
+  code      String   @id @db.VarChar(10) // "en", "vi", "ja", ...
+  name      String                       // "English", "Tiếng Việt"
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categoryTranslations CategoryTranslation[]
+  productTranslations  ProductTranslation[]
+}

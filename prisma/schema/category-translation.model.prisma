@@ -1,0 +1,13 @@
+model CategoryTranslation {
+  categoryId   Int
+  languageCode String @db.VarChar(10)
+  name         String
+  slug         String
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageCode], references: [code], onDelete: Restrict)
+
+  @@id([categoryId, languageCode])
+  @@unique([languageCode, slug])
+  @@unique([languageCode, name])
+}
