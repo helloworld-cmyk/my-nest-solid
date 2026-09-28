@@ -1,0 +1,10 @@
+model CouponTranslation {
+  couponId     String
+  languageCode String @db.VarChar(10)
+  description  String @db.Text
+
+  coupon   Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageCode], references: [code], onDelete: Restrict)
+
+  @@id([couponId, languageCode])
+}

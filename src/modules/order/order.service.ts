@@ -21,6 +21,7 @@ import { roundMoney } from '../../utils/money/index.js';
 import { pickCoverImageOrEmpty } from '../../utils/media/index.js';
 import { resolveUnitPrice } from '../../utils/price/index.js';
 import { normalizeCouponCode } from '../../utils/string/index.js';
+import { pickTranslation } from '../../utils/i18n/pick-translation.js';
 import { PrismaService } from '../../3rdparty/prisma/prisma.service.js';
 import { I18nTranslator } from '../../i18n/i18n.translator.js';
 import { CreateOrderRequestDto } from './dto/request/create-order.js';
@@ -180,7 +181,11 @@ export class OrderService {
         productId: item.productId,
         variantId: item.variantId,
         variantSku: (item.variant as { sku?: string | null }).sku ?? null,
-        name: item.product.name,
+        name:
+          pickTranslation(
+            item.product.translations,
+            this.translator.currentLang,
+          )?.name ?? '',
         imagePath: pickCoverImageOrEmpty(
           (item.product as { images?: { imagePath: string; type: string }[] })
             .images ?? [],

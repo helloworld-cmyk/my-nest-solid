@@ -2,43 +2,56 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../prisma/generated/prisma/client.js';
 import { PrismaService } from '../3rdparty/prisma/prisma.service.js';
 
-const categoryListItemSelect = {
-  id: true,
-  name: true,
-  slug: true,
-  imagePath: true,
-} satisfies Prisma.CategorySelect;
+const categoryInclude = {
+  translations: true,
+} satisfies Prisma.CategoryInclude;
 
-const categoryDetailSelect = {
-  id: true,
-  name: true,
-  slug: true,
-  imagePath: true,
-  isActive: true,
-  createdAt: true,
-  updatedAt: true,
-} satisfies Prisma.CategorySelect;
+export type CategoryWithTranslations = Prisma.CategoryGetPayload<{
+  include: typeof categoryInclude;
+}>;
 
 @Injectable()
 export class CategoryRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(data: Prisma.CategoryCreateInput) {
-    return this.prisma.category.create({ data, select: categoryDetailSelect });
+  create(
+    data: Omit<Prisma.CategoryCreateInput, 'translations'> & {
+      name: string;
+      slug: string;
+      languageCode: string;
+    },
+  ) {
+    const { name, slug, languageCode, ...categoryData } = data;
+    return this.prisma.category.create({
+      data: {
+        ...categoryData,
+        translations: {
+          create: {
+            name,
+            slug,
+            languageCode,
+          },
+        },
+      },
+      include: categoryInclude,
+    });
   }
 
   findAllActive() {
     return this.prisma.category.findMany({
       where: { isActive: true },
-      orderBy: { name: 'asc' },
-      select: categoryListItemSelect,
+      include: categoryInclude,
     });
   }
 
   findBySlug(slug: string) {
-    return this.prisma.category.findUnique({
-      where: { slug },
-      select: { id: true },
+    return this.prisma.category.findFirst({
+      where: {
+        translations: {
+          some: { slug },
+        },
+      },
+      include: categoryInclude,
     });
   }
 }

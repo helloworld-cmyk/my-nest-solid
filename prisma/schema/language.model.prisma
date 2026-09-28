@@ -9,4 +9,5 @@ model Language {
 
   categoryTranslations CategoryTranslation[]
   productTranslations  ProductTranslation[]
+  couponTranslations   CouponTranslation[]
 }

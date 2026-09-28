@@ -1,4 +1,5 @@
 import type { WishlistItemWithProduct } from '../../repositories/wishlist.repository.js';
+import { pickTranslation } from '../i18n/pick-translation.js';
 import { ProductResponseMapper } from './product.js';
 import type {
   WishlistItemResponseDto,
@@ -10,15 +11,21 @@ export class WishlistResponseMapper {
 
   static toWishlistProduct(
     product: WishlistItemWithProduct['product'],
+    lang?: string,
   ): WishlistProductDto {
+    const translation = pickTranslation(product.translations, lang);
+    const categoryTranslation = pickTranslation(
+      product.category.translations,
+      lang,
+    );
     return {
       id: product.id,
-      slug: product.slug,
-      name: product.name,
+      slug: translation?.slug ?? '',
+      name: translation?.name ?? '',
       price: Number(product.price),
       originalPrice:
         product.originalPrice == null ? null : Number(product.originalPrice),
-      category: product.category.name,
+      category: categoryTranslation?.name ?? '',
       imagePath: ProductResponseMapper.pickCoverImage(product.images),
       ratingAvg: Number(product.ratingAvg),
       reviewCount: product.reviewCount,
@@ -28,19 +35,23 @@ export class WishlistResponseMapper {
 
   static toWishlistItem(
     item: WishlistItemWithProduct,
+    lang?: string,
   ): WishlistItemResponseDto {
     return {
       id: item.id,
       userId: item.userId,
       productId: item.productId,
-      product: WishlistResponseMapper.toWishlistProduct(item.product),
+      product: WishlistResponseMapper.toWishlistProduct(item.product, lang),
       createdAt: item.createdAt,
     };
   }
 
   static toWishlistItems(
     items: WishlistItemWithProduct[],
+    lang?: string,
   ): WishlistItemResponseDto[] {
-    return items.map((item) => WishlistResponseMapper.toWishlistItem(item));
+    return items.map((item) =>
+      WishlistResponseMapper.toWishlistItem(item, lang),
+    );
   }
 }

@@ -4,6 +4,7 @@ import type {
 } from '../../repositories/cart.repository.js';
 import { roundMoney } from '../money/index.js';
 import { resolveUnitPrice as resolveUnitPriceUtil } from '../price/index.js';
+import { pickTranslation } from '../i18n/pick-translation.js';
 import { ProductResponseMapper } from './product.js';
 import type {
   CartItemResponseDto,
@@ -21,16 +22,24 @@ export class CartResponseMapper {
     return resolveUnitPriceUtil(item.product, item.variant);
   }
 
-  static toCartProduct(item: CartItemWithRelations): CartProductDto {
+  static toCartProduct(
+    item: CartItemWithRelations,
+    lang?: string,
+  ): CartProductDto {
     const { product } = item;
+    const translation = pickTranslation(product.translations, lang);
+    const categoryTranslation = pickTranslation(
+      product.category.translations,
+      lang,
+    );
     return {
       id: product.id,
-      slug: product.slug,
-      name: product.name,
+      slug: translation?.slug ?? '',
+      name: translation?.name ?? '',
       price: Number(product.price),
       originalPrice:
         product.originalPrice == null ? null : Number(product.originalPrice),
-      category: product.category.name,
+      category: categoryTranslation?.name ?? '',
       imagePath: ProductResponseMapper.pickCoverImage(product.images),
     };
   }
@@ -45,7 +54,10 @@ export class CartResponseMapper {
     };
   }
 
-  static toCartItem(item: CartItemWithRelations): CartItemResponseDto {
+  static toCartItem(
+    item: CartItemWithRelations,
+    lang?: string,
+  ): CartItemResponseDto {
     const unitPrice = CartResponseMapper.resolveUnitPrice(item);
     return {
       id: item.id,
@@ -54,18 +66,21 @@ export class CartResponseMapper {
       quantity: item.quantity,
       unitPrice,
       totalPrice: roundMoney(unitPrice * item.quantity),
-      product: CartResponseMapper.toCartProduct(item),
+      product: CartResponseMapper.toCartProduct(item, lang),
       variant: CartResponseMapper.toCartVariant(item),
       createdAt: item.createdAt,
     };
   }
 
-  static toCartItems(items: CartItemWithRelations[]): CartItemResponseDto[] {
-    return items.map((item) => CartResponseMapper.toCartItem(item));
+  static toCartItems(
+    items: CartItemWithRelations[],
+    lang?: string,
+  ): CartItemResponseDto[] {
+    return items.map((item) => CartResponseMapper.toCartItem(item, lang));
   }
 
-  static toCartResponse(cart: CartWithItems): CartResponseDto {
-    const items = CartResponseMapper.toCartItems(cart.items);
+  static toCartResponse(cart: CartWithItems, lang?: string): CartResponseDto {
+    const items = CartResponseMapper.toCartItems(cart.items, lang);
     return {
       id: cart.id,
       items,

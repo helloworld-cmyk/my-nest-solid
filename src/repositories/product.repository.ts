@@ -22,8 +22,9 @@ export interface ProductListFilter {
 }
 
 const productListInclude = {
-  category: true,
+  category: { include: { translations: true } },
   images: { orderBy: { sortOrder: 'asc' as const } },
+  translations: true,
 } satisfies Prisma.ProductInclude;
 
 export type ProductListItem = Prisma.ProductGetPayload<{
@@ -31,8 +32,9 @@ export type ProductListItem = Prisma.ProductGetPayload<{
 }>;
 
 const productDetailInclude = {
-  category: true,
+  category: { include: { translations: true } },
   images: { orderBy: { sortOrder: 'asc' as const } },
+  translations: true,
   variants: {
     where: { isActive: true },
     orderBy: { id: 'asc' as const },
@@ -56,7 +58,9 @@ export class ProductRepository {
       where.categoryId = filter.categoryId;
     }
     if (filter.categorySlug !== undefined) {
-      where.category = { slug: filter.categorySlug };
+      where.category = {
+        translations: { some: { slug: filter.categorySlug } },
+      };
     }
 
     if (filter.minPrice !== undefined || filter.maxPrice !== undefined) {
@@ -81,11 +85,15 @@ export class ProductRepository {
     if (filter.search) {
       const q = filter.search.trim();
       if (q) {
-        where.OR = [
-          { name: { contains: q, mode: 'insensitive' } },
-          { slug: { contains: q, mode: 'insensitive' } },
-          { description: { contains: q, mode: 'insensitive' } },
-        ];
+        where.translations = {
+          some: {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { slug: { contains: q, mode: 'insensitive' } },
+              { description: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+        };
       }
     }
 
@@ -129,7 +137,13 @@ export class ProductRepository {
     sort: ProductListSort,
     limit?: number,
     skip?: number,
-  ): Prisma.ProductFindManyArgs & { include: typeof productListInclude } {
+  ): {
+    where: Prisma.ProductWhereInput;
+    include: typeof productListInclude;
+    orderBy: Prisma.ProductOrderByWithRelationInput;
+    take?: number;
+    skip?: number;
+  } {
     return {
       where: this.buildWhere(filter),
       include: productListInclude,
@@ -171,8 +185,8 @@ export class ProductRepository {
   }
 
   findBySlug(slug: string): Promise<ProductDetail | null> {
-    return this.prisma.product.findUnique({
-      where: { slug },
+    return this.prisma.product.findFirst({
+      where: { translations: { some: { slug } } },
       include: productDetailInclude,
     });
   }

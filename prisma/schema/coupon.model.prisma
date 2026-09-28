@@ -8,7 +8,6 @@ model Coupon {
   code      String     @unique 
   type      CouponType
   value     Decimal    @db.Decimal(12, 2) 
-  description String   @db.Text
 
   minimumOrderAmount Decimal  @default(0) @db.Decimal(12, 2) 
   maxDiscountAmount  Decimal? @db.Decimal(12, 2) 
@@ -23,7 +22,8 @@ model Coupon {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  redemptions CouponRedemption[]
+  translations CouponTranslation[]
+  redemptions  CouponRedemption[]
 }
 
 model CouponRedemption {

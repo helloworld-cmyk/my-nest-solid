@@ -62,6 +62,7 @@ export class ProductService {
       page,
       limit,
       total,
+      this.translator.currentLang,
     );
   }
 
@@ -69,7 +70,10 @@ export class ProductService {
     const feed =
       await this.productRepository.findHomeProducts(HOME_PRODUCTS_SIZE);
 
-    return ProductResponseMapper.toHomeProductsResponse(feed);
+    return ProductResponseMapper.toHomeProductsResponse(
+      feed,
+      this.translator.currentLang,
+    );
   }
 
   async searchProducts(
@@ -91,7 +95,11 @@ export class ProductService {
       'newest',
     );
 
-    return ProductResponseMapper.toSearchProductsResponse(keyword, items);
+    return ProductResponseMapper.toSearchProductsResponse(
+      keyword,
+      items,
+      this.translator.currentLang,
+    );
   }
 
   async getFilterOptions(): Promise<FilterOptionsResponseDto> {
@@ -107,6 +115,7 @@ export class ProductService {
       colorValues,
       sizes,
       bounds,
+      this.translator.currentLang,
     );
   }
 
@@ -131,6 +140,7 @@ export class ProductService {
       product,
       related,
       latestReviews,
+      this.translator.currentLang,
     );
   }
 
@@ -147,6 +157,9 @@ export class ProductService {
       product.id,
       RELATED_LIMIT,
     );
-    return ProductResponseMapper.toRelatedProducts(related);
+    return ProductResponseMapper.toRelatedProducts(
+      related,
+      this.translator.currentLang,
+    );
   }
 }

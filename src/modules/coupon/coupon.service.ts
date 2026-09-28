@@ -33,7 +33,13 @@ export class CouponService {
 
     const total = usable.length;
     const items = usable.slice(skip, skip + limit);
-    return CouponResponseMapper.toCouponListResponse(items, page, limit, total);
+    return CouponResponseMapper.toCouponListResponse(
+      items,
+      page,
+      limit,
+      total,
+      this.translator.currentLang,
+    );
   }
 
   async validateCoupon(
@@ -91,6 +97,7 @@ export class CouponService {
       coupon,
       data.subtotal,
       discount,
+      this.translator.currentLang,
     );
   }
 }

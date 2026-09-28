@@ -33,6 +33,7 @@ import {
   pickCoverImage as pickCoverImageUtil,
   type CoverImageInput,
 } from '../media/index.js';
+import { pickTranslation } from '../i18n/pick-translation.js';
 
 export type CategoryListItem = Awaited<
   ReturnType<CategoryRepository['findAllActive']>
@@ -53,11 +54,12 @@ export class ProductResponseMapper {
     return pickCoverImageUtil(images);
   }
 
-  static toProductItem(item: ProductListItem): ProductItemDto {
+  static toProductItem(item: ProductListItem, lang?: string): ProductItemDto {
+    const translation = pickTranslation(item.translations, lang);
     return {
       id: item.id,
-      slug: item.slug,
-      name: item.name,
+      slug: translation?.slug ?? '',
+      name: translation?.name ?? '',
       price: Number(item.price),
       originalPrice:
         item.originalPrice == null ? null : Number(item.originalPrice),
@@ -68,8 +70,11 @@ export class ProductResponseMapper {
     };
   }
 
-  static toProductItems(items: ProductListItem[]): ProductItemDto[] {
-    return items.map((item) => ProductResponseMapper.toProductItem(item));
+  static toProductItems(
+    items: ProductListItem[],
+    lang?: string,
+  ): ProductItemDto[] {
+    return items.map((item) => ProductResponseMapper.toProductItem(item, lang));
   }
 
   static toProductListResponse(
@@ -77,18 +82,20 @@ export class ProductResponseMapper {
     page: number,
     limit: number,
     total: number,
+    lang?: string,
   ): ProductListResponseDto {
     return {
-      items: ProductResponseMapper.toProductItems(items),
+      items: ProductResponseMapper.toProductItems(items, lang),
       pagination: buildPaginationMeta(page, limit, total),
     };
   }
 
-  static toHomeProduct(item: ProductListItem): HomeProductDto {
+  static toHomeProduct(item: ProductListItem, lang?: string): HomeProductDto {
+    const translation = pickTranslation(item.translations, lang);
     return {
       id: item.id,
-      slug: item.slug,
-      name: item.name,
+      slug: translation?.slug ?? '',
+      name: translation?.name ?? '',
       imagePath: ProductResponseMapper.pickCoverImage(item.images),
       price: Number(item.price),
       originalPrice:
@@ -97,15 +104,21 @@ export class ProductResponseMapper {
     };
   }
 
-  static toHomeProducts(items: ProductListItem[]): HomeProductDto[] {
-    return items.map((item) => ProductResponseMapper.toHomeProduct(item));
+  static toHomeProducts(
+    items: ProductListItem[],
+    lang?: string,
+  ): HomeProductDto[] {
+    return items.map((item) => ProductResponseMapper.toHomeProduct(item, lang));
   }
 
-  static toHomeProductsResponse(feed: HomeProducts): HomeProductsResponseDto {
+  static toHomeProductsResponse(
+    feed: HomeProducts,
+    lang?: string,
+  ): HomeProductsResponseDto {
     return {
-      hotDeals: ProductResponseMapper.toHomeProducts(feed.hotDeals),
-      newArrivals: ProductResponseMapper.toHomeProducts(feed.newArrivals),
-      onSale: ProductResponseMapper.toHomeProducts(feed.onSale),
+      hotDeals: ProductResponseMapper.toHomeProducts(feed.hotDeals, lang),
+      newArrivals: ProductResponseMapper.toHomeProducts(feed.newArrivals, lang),
+      onSale: ProductResponseMapper.toHomeProducts(feed.onSale, lang),
     };
   }
 
@@ -126,64 +139,100 @@ export class ProductResponseMapper {
     );
   }
 
-  static toRelatedProduct(item: ProductListItem): RelatedProductDto {
+  static toRelatedProduct(
+    item: ProductListItem,
+    lang?: string,
+  ): RelatedProductDto {
+    const translation = pickTranslation(item.translations, lang);
     return {
       id: item.id,
-      slug: item.slug,
-      name: item.name,
+      slug: translation?.slug ?? '',
+      name: translation?.name ?? '',
       price: Number(item.price),
       imagePath: ProductResponseMapper.pickCoverImage(item.images),
       soldCount: item.soldCount,
     };
   }
 
-  static toRelatedProducts(items: ProductListItem[]): RelatedProductDto[] {
-    return items.map((item) => ProductResponseMapper.toRelatedProduct(item));
+  static toRelatedProducts(
+    items: ProductListItem[],
+    lang?: string,
+  ): RelatedProductDto[] {
+    return items.map((item) =>
+      ProductResponseMapper.toRelatedProduct(item, lang),
+    );
   }
 
-  static toSearchProductItem(item: ProductListItem): SearchProductItemDto {
+  static toSearchProductItem(
+    item: ProductListItem,
+    lang?: string,
+  ): SearchProductItemDto {
+    const translation = pickTranslation(item.translations, lang);
+    const categoryTranslation = pickTranslation(
+      item.category.translations,
+      lang,
+    );
     return {
       id: item.id,
-      slug: item.slug,
-      name: item.name,
+      slug: translation?.slug ?? '',
+      name: translation?.name ?? '',
       price: Number(item.price),
       originalPrice:
         item.originalPrice == null ? null : Number(item.originalPrice),
       imagePath: ProductResponseMapper.pickCoverImage(item.images),
-      type: item.category.name,
+      type: categoryTranslation?.name ?? '',
     };
   }
 
-  static toSearchProducts(items: ProductListItem[]): SearchProductItemDto[] {
-    return items.map((item) => ProductResponseMapper.toSearchProductItem(item));
+  static toSearchProducts(
+    items: ProductListItem[],
+    lang?: string,
+  ): SearchProductItemDto[] {
+    return items.map((item) =>
+      ProductResponseMapper.toSearchProductItem(item, lang),
+    );
   }
 
-  static toFilterCategories(items: ProductListItem[]): string[] {
-    return [...new Set(items.map((item) => item.category.name))].sort();
+  static toFilterCategories(items: ProductListItem[], lang?: string): string[] {
+    return [
+      ...new Set(
+        items.map(
+          (item) =>
+            pickTranslation(item.category.translations, lang)?.name ?? '',
+        ),
+      ),
+    ].sort();
   }
 
   static toSearchProductsResponse(
     keyword: string,
     items: ProductListItem[],
+    lang?: string,
   ): SearchProductsResponseDto {
     return {
       query: keyword,
-      filterCategories: ProductResponseMapper.toFilterCategories(items),
-      products: ProductResponseMapper.toSearchProducts(items),
+      filterCategories: ProductResponseMapper.toFilterCategories(items, lang),
+      products: ProductResponseMapper.toSearchProducts(items, lang),
     };
   }
 
-  static toCategoryGroup(category: CategoryListItem): CategoryGroupDto {
+  static toCategoryGroup(
+    category: CategoryListItem,
+    lang?: string,
+  ): CategoryGroupDto {
     return {
       // Chưa có SubCategory/tag nên items để rỗng, mở rộng khi schema thêm.
-      title: category.name,
+      title: pickTranslation(category.translations, lang)?.name ?? '',
       items: [],
     };
   }
 
-  static toCategoryGroups(categories: CategoryListItem[]): CategoryGroupDto[] {
+  static toCategoryGroups(
+    categories: CategoryListItem[],
+    lang?: string,
+  ): CategoryGroupDto[] {
     return categories.map((category) =>
-      ProductResponseMapper.toCategoryGroup(category),
+      ProductResponseMapper.toCategoryGroup(category, lang),
     );
   }
 
@@ -192,9 +241,10 @@ export class ProductResponseMapper {
     colorValues: number[],
     sizes: string[],
     bounds: PriceBounds,
+    lang?: string,
   ): FilterOptionsResponseDto {
     return {
-      categoryGroups: ProductResponseMapper.toCategoryGroups(categories),
+      categoryGroups: ProductResponseMapper.toCategoryGroups(categories, lang),
       colorValues,
       sizes,
       minPrice: bounds.min ?? 0,
@@ -242,23 +292,25 @@ export class ProductResponseMapper {
     product: ProductDetail,
     related: ProductListItem[],
     latestReviews: ReviewWithUser[],
+    lang?: string,
   ): ProductDetailDto {
+    const translation = pickTranslation(product.translations, lang);
     return {
       id: product.id,
-      slug: product.slug,
-      name: product.name,
+      slug: translation?.slug ?? '',
+      name: translation?.name ?? '',
       price: Number(product.price),
       originalPrice:
         product.originalPrice == null ? null : Number(product.originalPrice),
       ratingAvg: Number(product.ratingAvg),
       reviewCount: product.reviewCount,
       soldCount: product.soldCount,
-      description: product.description,
-      detailedDescription: product.detailedDescription,
+      description: translation?.description ?? '',
+      detailedDescription: translation?.detailedDescription ?? null,
       images: ProductResponseMapper.toProductImages(product.images),
       variants: ProductResponseMapper.toProductVariants(product.variants),
       reviews: ProductResponseMapper.toReviewPreviews(latestReviews),
-      relatedProducts: ProductResponseMapper.toRelatedProducts(related),
+      relatedProducts: ProductResponseMapper.toRelatedProducts(related, lang),
     };
   }
 }

@@ -24,7 +24,7 @@ export class CartService {
 
   async getCart(userId: string): Promise<CartResponseDto> {
     const cart = await this.cartRepository.getOrCreateByUserId(userId);
-    return CartResponseMapper.toCartResponse(cart);
+    return CartResponseMapper.toCartResponse(cart, this.translator.currentLang);
   }
 
   async addItem(
@@ -79,7 +79,10 @@ export class CartService {
     if (!updated) {
       return CartResponseMapper.toEmptyCartResponse(cart.id);
     }
-    return CartResponseMapper.toCartResponse(updated);
+    return CartResponseMapper.toCartResponse(
+      updated,
+      this.translator.currentLang,
+    );
   }
 
   async updateItem(
@@ -111,7 +114,7 @@ export class CartService {
     if (!cart) {
       throw new NotFoundException(this.translator.t('cart.cartNotFound'));
     }
-    return CartResponseMapper.toCartResponse(cart);
+    return CartResponseMapper.toCartResponse(cart, this.translator.currentLang);
   }
 
   async removeItem(userId: string, itemId: string): Promise<CartResponseDto> {
@@ -129,7 +132,7 @@ export class CartService {
     if (!cart) {
       throw new NotFoundException(this.translator.t('cart.cartNotFound'));
     }
-    return CartResponseMapper.toCartResponse(cart);
+    return CartResponseMapper.toCartResponse(cart, this.translator.currentLang);
   }
 
   async clearCart(userId: string): Promise<CartResponseDto> {

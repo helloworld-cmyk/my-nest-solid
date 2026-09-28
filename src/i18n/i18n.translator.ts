@@ -13,4 +13,8 @@ export class I18nTranslator {
     }
     return this.i18n.t(key, { lang: DEFAULT_LANG, args });
   }
+  get currentLang(): string {
+    const context = I18nContext.current();
+    return context?.lang || DEFAULT_LANG;
+  }
 }

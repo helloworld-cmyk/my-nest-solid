@@ -7,7 +7,7 @@ const couponRowSelect = {
   code: true,
   type: true,
   value: true,
-  description: true,
+  translations: true,
   minimumOrderAmount: true,
   maxDiscountAmount: true,
   usageLimit: true,

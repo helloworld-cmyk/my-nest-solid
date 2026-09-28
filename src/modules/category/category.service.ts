@@ -17,7 +17,11 @@ export class CategoryService {
 
   async getCategories(): Promise<CategoryListItemDto[]> {
     const categories = await this.categoryRepository.findAllActive();
-    return CategoryResponseMapper.toCategoryListItems(categories);
+    const items = CategoryResponseMapper.toCategoryListItems(
+      categories,
+      this.translator.currentLang,
+    );
+    return items.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async createCategory(dto: CreateCategoryDto): Promise<CategoryResponseDto> {
@@ -31,9 +35,13 @@ export class CategoryService {
     const category = await this.categoryRepository.create({
       name: dto.name,
       slug: dto.slug,
+      languageCode: this.translator.currentLang,
       imagePath: dto.imagePath,
       isActive: dto.isActive ?? true,
     });
-    return CategoryResponseMapper.toCategoryResponse(category);
+    return CategoryResponseMapper.toCategoryResponse(
+      category,
+      this.translator.currentLang,
+    );
   }
 }

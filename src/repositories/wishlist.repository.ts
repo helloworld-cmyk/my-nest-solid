@@ -5,8 +5,9 @@ import { PrismaService } from '../3rdparty/prisma/prisma.service.js';
 const wishlistItemInclude = {
   product: {
     include: {
-      category: true,
+      category: { include: { translations: true } },
       images: { orderBy: { sortOrder: 'asc' as const } },
+      translations: true,
     },
   },
 } satisfies Prisma.WishlistItemInclude;

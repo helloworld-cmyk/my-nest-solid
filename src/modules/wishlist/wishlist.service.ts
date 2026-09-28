@@ -24,7 +24,12 @@ export class WishlistService {
 
   async listWishlist(userId: string): Promise<WishlistListResponseDto> {
     const items = await this.wishlistRepository.listByUser(userId);
-    return { items: WishlistResponseMapper.toWishlistItems(items) };
+    return {
+      items: WishlistResponseMapper.toWishlistItems(
+        items,
+        this.translator.currentLang,
+      ),
+    };
   }
 
   async addToWishlist(
@@ -60,7 +65,10 @@ export class WishlistService {
         this.translator.t('wishlist.productNotFound'),
       );
     }
-    return WishlistResponseMapper.toWishlistItem(created);
+    return WishlistResponseMapper.toWishlistItem(
+      created,
+      this.translator.currentLang,
+    );
   }
 
   async removeFromWishlist(
@@ -76,6 +84,9 @@ export class WishlistService {
     }
 
     await this.wishlistRepository.remove(userId, productId);
-    return WishlistResponseMapper.toWishlistItem(existing);
+    return WishlistResponseMapper.toWishlistItem(
+      existing,
+      this.translator.currentLang,
+    );
   }
 }

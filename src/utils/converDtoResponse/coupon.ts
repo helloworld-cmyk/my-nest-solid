@@ -5,18 +5,20 @@ import type {
   CouponListResponseDto,
   ValidateCouponResponseDto,
 } from '../../modules/coupon/dto/response/coupon.js';
+import { pickTranslation } from '../i18n/pick-translation.js';
 import { roundMoney } from '../money/index.js';
 import { buildPaginationMeta } from '../pagination/index.js';
 
 export class CouponResponseMapper {
   private constructor() {}
 
-  static toCouponItem(coupon: CouponRow): CouponItemDto {
+  static toCouponItem(coupon: CouponRow, lang?: string): CouponItemDto {
+    const translation = pickTranslation(coupon.translations, lang);
     return {
       code: coupon.code,
       type: coupon.type,
       value: Number(coupon.value),
-      description: coupon.description,
+      description: translation?.description ?? '',
       minimumOrderAmount: Number(coupon.minimumOrderAmount),
       maxDiscountAmount:
         coupon.maxDiscountAmount == null
@@ -27,8 +29,10 @@ export class CouponResponseMapper {
     };
   }
 
-  static toCouponItems(coupons: CouponRow[]): CouponItemDto[] {
-    return coupons.map((coupon) => CouponResponseMapper.toCouponItem(coupon));
+  static toCouponItems(coupons: CouponRow[], lang?: string): CouponItemDto[] {
+    return coupons.map((coupon) =>
+      CouponResponseMapper.toCouponItem(coupon, lang),
+    );
   }
 
   static toCouponListResponse(
@@ -36,9 +40,10 @@ export class CouponResponseMapper {
     page: number,
     limit: number,
     total: number,
+    lang?: string,
   ): CouponListResponseDto {
     return {
-      items: CouponResponseMapper.toCouponItems(coupons),
+      items: CouponResponseMapper.toCouponItems(coupons, lang),
       pagination: buildPaginationMeta(page, limit, total),
     };
   }
@@ -64,12 +69,14 @@ export class CouponResponseMapper {
     coupon: CouponRow,
     subtotal: number,
     discount: number,
+    lang?: string,
   ): ValidateCouponResponseDto {
+    const translation = pickTranslation(coupon.translations, lang);
     return {
       code: coupon.code,
       type: coupon.type,
       value: Number(coupon.value),
-      description: coupon.description,
+      description: translation?.description ?? '',
       minimumOrderAmount: Number(coupon.minimumOrderAmount),
       maxDiscountAmount:
         coupon.maxDiscountAmount == null
